@@ -15,7 +15,7 @@ import com.example.shutterup.view.PhotoSpotListView
 
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivityTemp : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
