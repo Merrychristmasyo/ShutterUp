@@ -1,31 +1,59 @@
 package com.example.shutterup.repository
+import android.content.Context
 import com.example.shutterup.model.PhotoSpot
-import kotlinx.coroutines.delay
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PhotoSpotRepository @Inject constructor() {
-    private val mockPhotoSpots = listOf(
-        PhotoSpot("spot_001", "남산 타워", 37.55123, 126.98800, 10),
-        PhotoSpot("spot_002", "경복궁", 37.5796, 126.9770, 25),
-        PhotoSpot("spot_003", "잠실 롯데월드타워", 37.5126, 127.1026, 50),
-        PhotoSpot("spot_004", "서울숲", 37.5447, 127.0366, 42),
-        PhotoSpot("spot_005", "북촌 한옥마을", 37.5826, 126.9830, 18),
-        PhotoSpot("spot_006", "한강공원 여의도지구", 37.5284, 126.9332, 30),
-        PhotoSpot("spot_007", "덕수궁", 37.5658, 126.9751, 15),
-        PhotoSpot("spot_008", "명동", 37.5610, 126.9860, 22),
-        PhotoSpot("spot_009", "광화문 광장", 37.5759, 126.9768, 8),
-        PhotoSpot("spot_010", "이태원", 37.5342, 126.9930, 35)
-    )
+class PhotoSpotRepository @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+    private val json = Json { ignoreUnknownKeys = true; prettyPrint = true }
+    private val jsonFilePath = "photospot.json"
+    private val _cachedPhotoSpots = MutableStateFlow<List<PhotoSpot>?>(null)
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    init {
+        repositoryScope.launch {
+            val loadedSpots = loadPhotoSpotsFromJsonInternal()
+            _cachedPhotoSpots.value = loadedSpots
+            println("Photo spots loaded and cached successfully.")
+        }
+    }
+
+    private suspend fun loadPhotoSpotsFromJsonInternal(): List<PhotoSpot> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val jsonString = context.assets.open(jsonFilePath).bufferedReader().use { it.readText() }
+                json.decodeFromString<List<PhotoSpot>>(jsonString)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                println("Error reading $jsonFilePath: ${e.message}")
+                emptyList()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("Error parsing $jsonFilePath: ${e.message}")
+                emptyList()
+            }
+        }
+    }
 
     suspend fun getPhotoSpotList(): List<PhotoSpot> {
-        delay(1000)
-        return mockPhotoSpots
+        return _cachedPhotoSpots.first { it != null } ?: emptyList()
     }
 
     suspend fun getPhotoSpotById(id: String): PhotoSpot? {
-        delay(1000)
-        return mockPhotoSpots.find { it.id == id }
+        val photoSpots = _cachedPhotoSpots.first { it != null } ?: return null
+        return photoSpots.find { it.id == id }
     }
 }

@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.text.font.FontWeight
 import java.util.Collections.emptyList
 
 
@@ -59,12 +60,20 @@ fun PhotoSpotListView(
                 )
             }
             else -> {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(items = photoSpots, key = { it.id }) { photoSpot ->
-                        PhotoSpotListItem(photoSpot = photoSpot) { clickedSpot ->
-                            viewModel.onPhotoSpotClicked(clickedSpot)
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = "전체 포토스팟", // 여기에 원하는 제목을 입력하세요
+                        fontSize = 24.sp, // 제목 폰트 크기
+                        fontWeight = FontWeight.Bold, // 제목 굵게
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp) // 제목 패딩
+                    )
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(items = photoSpots, key = { it.id }) { photoSpot ->
+                            PhotoSpotListItem(photoSpot = photoSpot) { clickedSpot ->
+                                viewModel.onPhotoSpotClicked(clickedSpot)
+                            }
+                            HorizontalDivider()
                         }
-                        HorizontalDivider()
                     }
                 }
             }

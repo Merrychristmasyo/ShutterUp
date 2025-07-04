@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.kapt)
-
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -84,5 +84,5 @@ dependencies {
     // kaptAndroidTest(libs.hilt.android.compiler)
 
     implementation(libs.compose.runtime.livedata)
-
+    implementation(libs.kotlinx.serialization.json)
 }
