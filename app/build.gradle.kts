@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -34,9 +37,12 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    //buildFeatures {
-        //compose = true
-    //}
+    buildFeatures {
+        compose = true
+    }
+    hilt {
+        enableAggregatingTask = false
+    }
 }
 
 dependencies {
@@ -62,4 +68,27 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+    // Hilt Compose Integration (선택 사항, 필요시)
+    // implementation(libs.hilt.navigation.compose)
+
+    // Compose LiveData
+    implementation(libs.androidx.lifecycle.livedata.runtime.ktx)
+
+    // ViewModel Compose
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Kotlinx Coroutines
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
+    // kapt를 사용하는 경우 testImplementation 및 androidTestImplementation에도 추가해야 할 수 있습니다.
+    // kaptTest(libs.hilt.android.compiler)
+    // kaptAndroidTest(libs.hilt.android.compiler)
+
+    implementation(libs.compose.runtime.livedata)
+    implementation(libs.kotlinx.serialization.json)
 }
