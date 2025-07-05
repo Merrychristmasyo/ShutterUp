@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shutterup.model.PhotoSpot
 import com.example.shutterup.viewmodel.PhotoSpotListViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,12 +23,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.text.font.FontWeight
+import androidx.hilt.navigation.compose.hiltViewModel
 import java.util.Collections.emptyList
 
 
 @Composable
 fun PhotoSpotListView(
-    viewModel: PhotoSpotListViewModel = viewModel()
+    viewModel: PhotoSpotListViewModel = hiltViewModel()
 ) {
     val photoSpots by viewModel.photoSpots.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)

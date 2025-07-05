@@ -27,7 +27,7 @@ class PhotoSpotListViewModel @Inject constructor(
         loadPhotoSpots()
     }
 
-    fun loadPhotoSpots() {
+    private fun loadPhotoSpots() {
         _isLoading.value = true
         _errorMessage.value = null
 
