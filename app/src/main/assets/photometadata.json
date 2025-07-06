@@ -10,7 +10,8 @@
     "iso": "3200",
     "shutterSpeed": "1/500",
     "lensName": "Sigma RF 18-50",
-    "photoSpotId": "spot_044"
+    "photoSpotId": "spot_044",
+    "shootingMethod": "ISO 3200으로 설정하여 광량을 확보하고, 1/500초의 빠른 셔터 속도로 흔들림을 방지했습니다. Sigma RF 18-50 렌즈의 50mm 화각과 f5.4 조리개로 촬영했습니다."
   },
   {
     "id": "2",
@@ -23,7 +24,8 @@
     "iso": "800",
     "shutterSpeed": "1/250",
     "lensName": "Canon EF 50mm f/1.8 STM",
-    "photoSpotId": "spot_001"
+    "photoSpotId": "spot_001",
+    "shootingMethod": "Canon EF 50mm f/1.8 STM 렌즈를 사용하여 85mm 화각과 f8.0 조리개로 촬영했습니다. ISO 800에 1/250초 셔터 속도로 선명한 이미지를 얻었습니다."
   },
   {
     "id": "3",
@@ -36,7 +38,8 @@
     "iso": "400",
     "shutterSpeed": "1/125",
     "lensName": "Sigma 35mm f/1.4 Art",
-    "photoSpotId": "spot_002"
+    "photoSpotId": "spot_002",
+    "shootingMethod": "Sigma 35mm f/1.4 Art 렌즈로 35mm 화각, f4.0 조리개, ISO 400, 1/125초 셔터 속도로 촬영하여 아름다운 한옥 풍경을 담았습니다."
   },
   {
     "id": "4",
@@ -49,7 +52,8 @@
     "iso": "1600",
     "shutterSpeed": "1/500",
     "lensName": "Sony FE 24-70mm f/2.8 GM",
-    "photoSpotId": "spot_003"
+    "photoSpotId": "spot_003",
+    "shootingMethod": "Sony FE 24-70mm f/2.8 GM 렌즈의 24mm 화각, f2.8 조리개를 사용했습니다. ISO 1600과 1/500초의 셔터 속도로 롯데월드타워의 웅장한 모습을 포착했습니다."
   },
   {
     "id": "5",
@@ -62,7 +66,8 @@
     "iso": "200",
     "shutterSpeed": "1/1000",
     "lensName": "Canon EF 50mm f/1.8 STM",
-    "photoSpotId": "spot_004"
+    "photoSpotId": "spot_004",
+    "shootingMethod": "Canon EF 50mm f/1.8 STM 렌즈로 50mm 화각, f5.6 조리개, ISO 200, 1/1000초 셔터 속도로 촬영하여 서울숲의 푸른 풍경을 담았습니다."
   },
   {
     "id": "6",
@@ -75,7 +80,8 @@
     "iso": "100",
     "shutterSpeed": "1/250",
     "lensName": "Nikon AF-S 85mm f/1.8G",
-    "photoSpotId": "spot_005"
+    "photoSpotId": "spot_005",
+    "shootingMethod": "Nikon AF-S 85mm f/1.8G 렌즈를 사용하여 85mm 화각과 f1.8 조리개로 촬영했습니다. ISO 100에 1/250초 셔터 속도로 전통 한옥의 아름다움을 강조했습니다."
   },
   {
     "id": "7",
@@ -88,7 +94,8 @@
     "iso": "1600",
     "shutterSpeed": "1/60",
     "lensName": "Sigma 35mm f/1.4 Art",
-    "photoSpotId": "spot_006"
+    "photoSpotId": "spot_006",
+    "shootingMethod": "Sigma 35mm f/1.4 Art 렌즈로 35mm 화각, f2.8 조리개, ISO 1600, 1/60초 셔터 속도로 한강 야경을 촬영했습니다."
   },
   {
     "id": "8",
@@ -101,7 +108,8 @@
     "iso": "400",
     "shutterSpeed": "1/125",
     "lensName": "Canon EF 50mm f/1.8 STM",
-    "photoSpotId": "spot_007"
+    "photoSpotId": "spot_007",
+    "shootingMethod": "Canon EF 50mm f/1.8 STM 렌즈를 사용하여 100mm 화각(크롭바디 기준), f5.6 조리개, ISO 400, 1/125초 셔터 속도로 덕수궁 돌담길의 고즈넉함을 담았습니다."
   },
   {
     "id": "9",
@@ -114,7 +122,8 @@
     "iso": "3200",
     "shutterSpeed": "1/30",
     "lensName": "Sony FE 24-70mm f/2.8 GM",
-    "photoSpotId": "spot_008"
+    "photoSpotId": "spot_008",
+    "shootingMethod": "Sony FE 24-70mm f/2.8 GM 렌즈의 24mm 화각, f1.8 조리개를 사용하여 촬영했습니다. ISO 3200과 1/30초의 셔터 속도로 명동 거리의 활기찬 야경을 포착했습니다."
   },
   {
     "id": "10",
@@ -127,7 +136,8 @@
     "iso": "100",
     "shutterSpeed": "1/500",
     "lensName": "Tamron 28-75mm f/2.8 Di III RXD",
-    "photoSpotId": "spot_009"
+    "photoSpotId": "spot_009",
+    "shootingMethod": "Tamron 28-75mm f/2.8 Di III RXD 렌즈로 50mm 화각, f8.0 조리개, ISO 100, 1/500초 셔터 속도로 광화문 광장을 촬영했습니다."
   },
   {
     "id": "11",
@@ -140,7 +150,8 @@
     "iso": "800",
     "shutterSpeed": "1/125",
     "lensName": "Nikon AF-S 85mm f/1.8G",
-    "photoSpotId": "spot_010"
+    "photoSpotId": "spot_010",
+    "shootingMethod": "Nikon AF-S 85mm f/1.8G 렌즈를 사용하여 85mm 화각과 f2.8 조리개로 촬영했습니다. ISO 800에 1/125초 셔터 속도로 이태원의 이국적인 분위기를 담았습니다."
   },
   {
     "id": "12",
@@ -153,7 +164,8 @@
     "iso": "1600",
     "shutterSpeed": "1/60",
     "lensName": "Sigma 35mm f/1.4 Art",
-    "photoSpotId": "spot_011"
+    "photoSpotId": "spot_011",
+    "shootingMethod": "Sigma 35mm f/1.4 Art 렌즈로 35mm 화각, f4.0 조리개, ISO 1600, 1/60초 셔터 속도로 홍대 거리의 활기찬 모습을 촬영했습니다."
   },
   {
     "id": "13",
@@ -166,7 +178,8 @@
     "iso": "200",
     "shutterSpeed": "1/250",
     "lensName": "Sony FE 24-70mm f/2.8 GM",
-    "photoSpotId": "spot_012"
+    "photoSpotId": "spot_012",
+    "shootingMethod": "Sony FE 24-70mm f/2.8 GM 렌즈의 24mm 화각, f5.6 조리개를 사용했습니다. ISO 200과 1/250초의 셔터 속도로 DDP의 독특한 건축물을 포착했습니다."
   },
   {
     "id": "14",
@@ -179,7 +192,8 @@
     "iso": "400",
     "shutterSpeed": "1/125",
     "lensName": "Canon EF 50mm f/1.8 STM",
-    "photoSpotId": "spot_013"
+    "photoSpotId": "spot_013",
+    "shootingMethod": "Canon EF 50mm f/1.8 STM 렌즈로 50mm 화각, f1.8 조리개, ISO 400, 1/125초 셔터 속도로 청계천의 물줄기를 담았습니다."
   },
   {
     "id": "15",
@@ -192,7 +206,8 @@
     "iso": "100",
     "shutterSpeed": "1/500",
     "lensName": "Sigma 35mm f/1.4 Art",
-    "photoSpotId": "spot_014"
+    "photoSpotId": "spot_014",
+    "shootingMethod": "Sigma 35mm f/1.4 Art 렌즈로 35mm 화각, f8.0 조리개, ISO 100, 1/500초 셔터 속도로 인사동의 전통적인 분위기를 촬영했습니다."
   },
   {
     "id": "16",
@@ -205,7 +220,8 @@
     "iso": "3200",
     "shutterSpeed": "1/60",
     "lensName": "Sony FE 24-70mm f/2.8 GM",
-    "photoSpotId": "spot_015"
+    "photoSpotId": "spot_015",
+    "shootingMethod": "Sony FE 24-70mm f/2.8 GM 렌즈의 24mm 화각, f2.8 조리개를 사용했습니다. ISO 3200과 1/60초의 셔터 속도로 코엑스 별마당 도서관의 웅장함을 포착했습니다."
   },
   {
     "id": "17",
@@ -218,7 +234,8 @@
     "iso": "200",
     "shutterSpeed": "1/1000",
     "lensName": "Nikon AF-S 85mm f/1.8G",
-    "photoSpotId": "spot_016"
+    "photoSpotId": "spot_016",
+    "shootingMethod": "Nikon AF-S 85mm f/1.8G 렌즈를 사용하여 100mm 화각(크롭바디 기준)과 f5.6 조리개로 촬영했습니다. ISO 200에 1/1000초 셔터 속도로 하늘공원 갈대밭의 아름다움을 담았습니다."
   },
   {
     "id": "18",
@@ -231,7 +248,8 @@
     "iso": "800",
     "shutterSpeed": "1/250",
     "lensName": "Canon EF 50mm f/1.8 STM",
-    "photoSpotId": "spot_017"
+    "photoSpotId": "spot_017",
+    "shootingMethod": "Canon EF 50mm f/1.8 STM 렌즈로 50mm 화각, f1.8 조리개, ISO 800, 1/250초 셔터 속도로 여의도 한강공원의 여유로운 풍경을 담았습니다."
   },
   {
     "id": "19",
@@ -244,7 +262,8 @@
     "iso": "1600",
     "shutterSpeed": "1/60",
     "lensName": "Sony FE 24-70mm f/2.8 GM",
-    "photoSpotId": "spot_018"
+    "photoSpotId": "spot_018",
+    "shootingMethod": "Sony FE 24-70mm f/2.8 GM 렌즈의 24mm 화각, f4.0 조리개를 사용했습니다. ISO 1600과 1/60초의 셔터 속도로 선유도 공원의 독특한 다리를 포착했습니다."
   },
   {
     "id": "20",
@@ -257,6 +276,7 @@
     "iso": "400",
     "shutterSpeed": "1/125",
     "lensName": "Nikon AF-S 85mm f/1.8G",
-    "photoSpotId": "spot_019"
+    "photoSpotId": "spot_019",
+    "shootingMethod": "Nikon AF-S 85mm f/1.8G 렌즈를 사용하여 85mm 화각과 f5.6 조리개로 촬영했습니다. ISO 400에 1/125초 셔터 속도로 올림픽공원의 평화로운 풍경을 담았습니다."
   }
 ]
