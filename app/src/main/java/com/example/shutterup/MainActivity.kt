@@ -13,7 +13,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.example.shutterup.ui.theme.ShutterUpTheme
 import com.example.shutterup.view.PhotoListView
 import com.example.shutterup.view.PhotoSpotListView
-import com.example.shutterup.view.PhotoDetailView // PhotoDetailView 임포트 추가
+import com.example.shutterup.view.PhotoDetailView
+import com.example.shutterup.view.PhotoSpotDetailView // PhotoSpotDetailView 임포트 추가
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.NavigationBar
@@ -29,7 +30,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavType
-import androidx.navigation.navArgument // navArgument 임포트 추가
+import androidx.navigation.navArgument
 import com.example.shutterup.navigation.Screen
 
 
@@ -57,21 +58,25 @@ class MainActivity : ComponentActivity() {
                             startDestination = Screen.PhotoList.route,
                             modifier = Modifier.padding(innerPadding)
                         ) {
-                            // 📸 사진 목록 화면
                             composable(Screen.PhotoList.route) {
                                 PhotoListView(
-                                    // 이미지 클릭 시 PhotoDetail 화면으로 이동하는 콜백 정의
                                     onPhotoClick = { photoId ->
                                         navController.navigate(Screen.PhotoDetail.createRoute(photoId))
                                     }
                                 )
                             }
-                            // 사진 스팟 목록 화면
+                            
                             composable(Screen.PhotoSpotList.route) {
-                                PhotoSpotListView()
+                                PhotoSpotListView(
+                                    onPhotoSpotClick = { photoSpotId ->
+                                        navController.navigate(Screen.PhotoSpotDetail.createRoute(photoSpotId))
+                                    }
+                                )
                             }
+                            
+                            // 사진 상세 화면
                             composable(
-                                route = Screen.PhotoDetail.route, // Screen 객체의 라우트 사용
+                                route = Screen.PhotoDetail.route,
                                 arguments = listOf(navArgument("photoId") { type = NavType.StringType })
                             ) { backStackEntry ->
                                 val photoId = backStackEntry.arguments?.getString("photoId")
@@ -82,6 +87,26 @@ class MainActivity : ComponentActivity() {
                                     )
                                 } else {
                                     Text("오류: 사진 ID를 찾을 수 없습니다.")
+                                }
+                            }
+                            
+                            composable(
+                                route = Screen.PhotoSpotDetail.route,
+                                arguments = listOf(navArgument("photoSpotId") { type = NavType.StringType })
+                            ) { backStackEntry ->
+                                val photoSpotId = backStackEntry.arguments?.getString("photoSpotId")
+                                if (photoSpotId != null) {
+                                    PhotoSpotDetailView(
+                                        photoSpotId = photoSpotId,
+                                        onPhotoClick = { photoId ->
+                                            navController.navigate(Screen.PhotoDetail.createRoute(photoId))
+                                        },
+                                        onBackClick = {
+                                            navController.navigate(Screen.PhotoSpotList.route)
+                                        }
+                                    )
+                                } else {
+                                    Text("오류: 포토 스팟 ID를 찾을 수 없습니다.")
                                 }
                             }
                         }
@@ -97,7 +122,6 @@ fun BottomNavigationBar(navController: NavController) {
     val screens = listOf(
         Screen.PhotoList,
         Screen.PhotoSpotList
-        // PhotoDetail은 보통 BottomBar에 포함되지 않으므로 여기에 추가하지 않습니다.
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
