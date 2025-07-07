@@ -60,6 +60,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
 
     implementation("androidx.compose.material:material-icons-extended") //이거 navigation bar의 icon때문에 넣었음
+    implementation("androidx.compose.material3:material3:1.2.1") // 버전은 최신으로
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

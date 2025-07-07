@@ -12,7 +12,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 import com.example.shutterup.ui.theme.ShutterUpTheme
 import com.example.shutterup.view.PhotoListView
-import com.example.shutterup.view.PhotoSpotListView
+import com.example.shutterup.view.PhotoSpotListVie
+import com.example.shutterup.view.ProfileListView
 import com.example.shutterup.view.PhotoDetailView // PhotoDetailView 임포트 추가
 
 import androidx.compose.material3.Scaffold
@@ -70,6 +71,9 @@ class MainActivity : ComponentActivity() {
                             composable(Screen.PhotoSpotList.route) {
                                 PhotoSpotListView()
                             }
+                            composable(Screen.ProfileList.route) {
+                                ProfileListView()
+                            }
                             composable(
                                 route = Screen.PhotoDetail.route, // Screen 객체의 라우트 사용
                                 arguments = listOf(navArgument("photoId") { type = NavType.StringType })
@@ -83,6 +87,7 @@ class MainActivity : ComponentActivity() {
                                 } else {
                                     Text("오류: 사진 ID를 찾을 수 없습니다.")
                                 }
+
                             }
                         }
                     }
@@ -96,8 +101,8 @@ class MainActivity : ComponentActivity() {
 fun BottomNavigationBar(navController: NavController) {
     val screens = listOf(
         Screen.PhotoList,
-        Screen.PhotoSpotList
-        // PhotoDetail은 보통 BottomBar에 포함되지 않으므로 여기에 추가하지 않습니다.
+        Screen.PhotoSpotList,
+        Screen.ProfileList
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
