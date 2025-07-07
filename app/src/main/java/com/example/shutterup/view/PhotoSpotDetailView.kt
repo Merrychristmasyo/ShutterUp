@@ -33,7 +33,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shutterup.viewmodel.PhotoSpotDetailViewModel
-import com.example.shutterup.BuildConfig
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -41,6 +40,7 @@ import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+import com.mapbox.maps.plugin.gestures.gestures
 
 @Composable
 fun PhotoSpotDetailView(
@@ -345,22 +345,28 @@ fun MapboxMap(
                     
                     mapboxMap.setCamera(cameraOptions)
                     
-                    // 마커 추가 - 더 간단한 방법 사용
+                    // 지도 상호작용 비활성화 (완전 고정)
+                    gestures.scrollEnabled = false
+                    gestures.pinchToZoomEnabled = false
+                    gestures.rotateEnabled = false
+                    gestures.pitchEnabled = false
+                    gestures.doubleTapToZoomInEnabled = false
+                    gestures.doubleTouchToZoomOutEnabled = false
+                    gestures.quickZoomEnabled = false
+                    gestures.scrollDecelerationEnabled = false
+                    
                     val annotationApi = annotations
                     val pointAnnotationManager = annotationApi.createPointAnnotationManager()
                     
-                    // 커스텀 마커 비트맵 생성
                     val bitmap = android.graphics.Bitmap.createBitmap(100, 100, android.graphics.Bitmap.Config.ARGB_8888)
                     val canvas = android.graphics.Canvas(bitmap)
                     
-                    // 빨간색 원 그리기
                     val paint = android.graphics.Paint().apply {
                         color = android.graphics.Color.RED
                         isAntiAlias = true
                     }
                     canvas.drawCircle(50f, 50f, 40f, paint)
                     
-                    // 흰색 테두리 추가
                     val borderPaint = android.graphics.Paint().apply {
                         color = android.graphics.Color.WHITE
                         this.style = android.graphics.Paint.Style.STROKE
@@ -369,7 +375,6 @@ fun MapboxMap(
                     }
                     canvas.drawCircle(50f, 50f, 40f, borderPaint)
                     
-                    // 스타일에 이미지 추가
                     style.addImage("custom-marker", bitmap)
                     
                     val pointAnnotationOptions = PointAnnotationOptions()

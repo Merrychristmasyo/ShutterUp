@@ -41,6 +41,7 @@ import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+import com.mapbox.maps.plugin.gestures.gestures
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -334,6 +335,16 @@ fun PhotoDetailMapView(
     AndroidView(
         factory = { context ->
             MapView(context).apply {
+                // 지도 상호작용 비활성화 (완전 고정)
+                gestures.scrollEnabled = false
+                gestures.pinchToZoomEnabled = false
+                gestures.rotateEnabled = false
+                gestures.pitchEnabled = false
+                gestures.doubleTapToZoomInEnabled = false
+                gestures.doubleTouchToZoomOutEnabled = false
+                gestures.quickZoomEnabled = false
+                gestures.scrollDecelerationEnabled = false
+                
                 // 지도 스타일 설정
                 mapboxMap.loadStyle(Style.MAPBOX_STREETS) { style ->
                     // 카메라 위치 설정
