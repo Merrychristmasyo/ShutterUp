@@ -17,6 +17,7 @@ kotlinx-serialization-json = "1.7.3"
 coil = "2.6.0"
 navigationCompose = "2.9.1"
 materialIconsExtended = "1.7.8"
+mapbox = "11.13.1"
 
 
 [libraries]
@@ -58,6 +59,10 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+
+# Mapbox
+mapbox-android = { group = "com.mapbox.maps", name = "android", version.ref = "mapbox" }
+mapbox-compose = { group = "com.mapbox.extension", name = "maps-compose", version.ref = "mapbox" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -29,7 +29,8 @@ import java.util.Collections.emptyList
 
 @Composable
 fun PhotoSpotListView(
-    viewModel: PhotoSpotViewModel = hiltViewModel()
+    viewModel: PhotoSpotViewModel = hiltViewModel(),
+    onPhotoSpotClick: (String) -> Unit = {}
 ) {
     val photoSpots by viewModel.photoSpots.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
@@ -70,7 +71,7 @@ fun PhotoSpotListView(
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(items = photoSpots, key = { it.id }) { photoSpot ->
                             PhotoSpotListItem(photoSpot = photoSpot) { clickedSpot ->
-                                viewModel.onPhotoSpotClicked(clickedSpot)
+                                onPhotoSpotClick(clickedSpot.id)
                             }
                             HorizontalDivider()
                         }
