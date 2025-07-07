@@ -99,7 +99,7 @@ fun PhotoListView(
             ) {
                 items(photoMetadata.size) { index ->
                     val photoMetadata = photoMetadata[index]
-
+                    //여기랑 (1)
                     val drawableResId = remember(photoMetadata.filename) {
                         context.resources.getIdentifier(
                             photoMetadata.filename,
@@ -116,6 +116,7 @@ fun PhotoListView(
                             }
                     ) {
                         if (drawableResId != 0) {
+                            //여기 (2) 복붙해서 사진 불러오기
                             AsyncImage(
                                 model = ImageRequest.Builder(context)
                                     .data(drawableResId)

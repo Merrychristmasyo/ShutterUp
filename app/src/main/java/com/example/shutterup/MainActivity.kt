@@ -12,7 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 import com.example.shutterup.ui.theme.ShutterUpTheme
 import com.example.shutterup.view.PhotoListView
-import com.example.shutterup.view.PhotoSpotListVie
+import com.example.shutterup.view.PhotoSpotListView
 import com.example.shutterup.view.ProfileListView
 import com.example.shutterup.view.PhotoDetailView // PhotoDetailView 임포트 추가
 

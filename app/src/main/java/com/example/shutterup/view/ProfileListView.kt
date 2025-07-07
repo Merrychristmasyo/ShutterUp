@@ -34,6 +34,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import com.example.shutterup.viewmodel.ProfileListViewModel
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+
+import coil.compose.AsyncImage
+
 @Composable
 fun ProfileListView(
     viewModel: ProfileListViewModel = hiltViewModel()
@@ -135,16 +147,52 @@ fun ProfileListView(
 
 @Composable
 fun ProfileListItem(profile: Profile, onClick: (Profile) -> Unit) {
-    Column(
+    // Context에서 리소스 ID를 한 번만 계산하도록 remember 사용
+    val context = LocalContext.current
+
+    // 1) user_001 → index = 1
+    val index = profile.userId
+        .substringAfter("user_")
+        .toIntOrNull()
+        ?: return
+
+    // 2) assets 경로로 URI 생성
+    val assetUri = "file:///android_asset/profile/profile$index.png"
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick(profile) }
-            .padding(16.dp)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(text = profile.userId, fontSize = 20.sp)
-        Spacer(modifier = Modifier.height(4.dp)) // 간격 추가
-        Text(text = "카메라 정보: ${profile.camera},", fontSize = 14.sp)
-        Spacer(modifier = Modifier.height(2.dp)) // 간격 추가
-        Text(text = "Bio: ${profile.bio}", fontSize = 14.sp) // <-- PhotoSpot 모델 확인/수정
+        // 3) Coil AsyncImage 로딩
+        AsyncImage(
+            model = assetUri,
+            contentDescription = "${profile.userId} 프로필",
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop,
+            placeholder = /* R.drawable.ic_profile_placeholder */ null
+        )
+        // 텍스트 정보
+        Column {
+            Text(
+                text = profile.userId,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "카메라 정보: ${profile.camera}",
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "Bio: ${profile.bio}",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }
