@@ -13,6 +13,7 @@ data class PhotoMetadata(
     val iso: String,
     val shutterSpeed: String,
     val lensName: String,
+    val cameraName: String,
     val photoSpotId: String,
     val shootingMethod: String
 )
