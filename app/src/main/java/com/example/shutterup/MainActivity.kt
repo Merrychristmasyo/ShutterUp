@@ -13,7 +13,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.example.shutterup.ui.theme.ShutterUpTheme
 import com.example.shutterup.view.PhotoListView
 import com.example.shutterup.view.PhotoSpotListView
-import com.example.shutterup.view.PhotoDetailView // PhotoDetailView 임포트 추가
+import com.example.shutterup.view.PhotoDetailView
+import com.example.shutterup.view.ProfileListView
+import com.example.shutterup.view.PhotoSpotDetailView
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.NavigationBar
