@@ -63,4 +63,8 @@ class PhotoMetadataRepository @Inject constructor(
         return photoMetadata
     }
 
+    suspend fun getPhotoMetadataListByPhotoSpotId(photoSpotId: String): List<PhotoMetadata> {
+        val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
+        return photoMetadata.filter { it.photoSpotId == photoSpotId }
+    }
 }
