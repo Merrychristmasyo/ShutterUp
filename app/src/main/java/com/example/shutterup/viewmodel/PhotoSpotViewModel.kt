@@ -7,11 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.shutterup.model.PhotoSpot
 import com.example.shutterup.repository.PhotoSpotRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class PhotoSpotListViewModel @Inject constructor(
+class PhotoSpotViewModel @Inject constructor(
     private val photoSpotRepository: PhotoSpotRepository
 ): ViewModel() {
     private val _photoSpots = MutableLiveData<List<PhotoSpot>>()
@@ -35,7 +37,6 @@ class PhotoSpotListViewModel @Inject constructor(
             try {
                 val fetchedPhotoSpots = photoSpotRepository.getPhotoSpotList()
                 _photoSpots.value = fetchedPhotoSpots
-
             } catch (e: Exception) {
                 _errorMessage.value = "Failed to load photo spots : ${e.message}"
                 _photoSpots.value = emptyList()

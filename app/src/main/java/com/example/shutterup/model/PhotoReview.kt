@@ -3,10 +3,9 @@ package com.example.shutterup.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PhotoSpot(
+data class PhotoReview(
     val id: String,
+    val reviewId: String,
     val name: String,
-    val latitude: Double,
-    val longitude: Double,
-    val photoCount: Int,
+    val content: String,
 )

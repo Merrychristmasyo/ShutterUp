@@ -1,10 +1,6 @@
 package com.example.shutterup.repository
-
 import android.content.Context
-import androidx.annotation.DrawableRes
-import com.example.shutterup.R
-import com.example.shutterup.model.PhotoDetail
-import com.example.shutterup.model.PhotoMetadata
+import com.example.shutterup.model.PhotoReview
 import com.example.shutterup.model.PhotoSpot
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -20,27 +16,27 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PhotoMetadataRepository @Inject constructor(
+class PhotoReviewRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = true }
-    private val jsonFilePath = "photometadata.json"
+    private val jsonFilePath = "photoreview.json"
+    private val _cachedPhotoReviews = MutableStateFlow<List<PhotoReview>?>(null)
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _cachedPhotoMetadata = MutableStateFlow<List<PhotoMetadata>?>(null)
 
     init {
         repositoryScope.launch {
-            val loadedPhotoMetadata = loadPhotoMetadataFromJsonInternal()
-            _cachedPhotoMetadata.value = loadedPhotoMetadata
-            println("Photo metadata loaded and cached successfully.")
+            val loadedSpots = loadPhotoReviewsFromJsonInternal()
+            _cachedPhotoReviews.value = loadedSpots
+            println("Photo reviews loaded and cached successfully.")
         }
     }
 
-    private suspend fun loadPhotoMetadataFromJsonInternal(): List<PhotoMetadata> {
+    private suspend fun loadPhotoReviewsFromJsonInternal(): List<PhotoReview> {
         return withContext(Dispatchers.IO) {
             try {
                 val jsonString = context.assets.open(jsonFilePath).bufferedReader().use { it.readText() }
-                json.decodeFromString<List<PhotoMetadata>>(jsonString)
+                json.decodeFromString<List<PhotoReview>>(jsonString)
             } catch (e: IOException) {
                 e.printStackTrace()
                 println("Error reading $jsonFilePath: ${e.message}")
@@ -53,14 +49,10 @@ class PhotoMetadataRepository @Inject constructor(
         }
     }
 
-    suspend fun getPhotoMetadataById(photoId: String): PhotoMetadata? {
-        val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
-        return photoMetadata.find { it.id == photoId }
-    }
+    suspend fun getPhotoReviewsById(id: String): List<PhotoReview> {
+        val photoReviews = _cachedPhotoReviews.first { it != null } ?: return emptyList()
+        val filteredPhotoReview = photoReviews.filter { it.id == id }
 
-    suspend fun getAllPhotoMetadata(): List<PhotoMetadata> {
-        val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
-        return photoMetadata
+        return filteredPhotoReview
     }
-
 }
