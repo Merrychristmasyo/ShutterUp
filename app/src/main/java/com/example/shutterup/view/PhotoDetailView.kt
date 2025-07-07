@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -33,6 +34,13 @@ import com.example.shutterup.model.PhotoMetadata
 import com.example.shutterup.model.PhotoReview
 import com.example.shutterup.model.PhotoSpot
 import com.example.shutterup.viewmodel.PhotoDetailViewModel
+import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.MapView
+import com.mapbox.maps.Style
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,14 +140,6 @@ fun PhotoDetailScreenContent(
                         Spacer(modifier = Modifier.height(24.dp))
                         PhotoDetailSpotInfoSection(photoSpot = photoSpot)
                         Spacer(modifier = Modifier.height(16.dp))
-                        photoSpot?.let { spot ->
-                            Text(
-                                text = "N ${String.format("%.2f", spot.latitude)} E ${String.format("%.2f", spot.longitude)}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
                     item {
@@ -202,64 +202,16 @@ fun PhotoDetailSpotInfoSection(photoSpot: PhotoSpot?) {
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0))
         ) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("지도 영역", color = Color.Gray)
-            }
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        // 주소 및 평점 부분
-        Card(
-            modifier = Modifier
-                .weight(1f)
-                .height(120.dp),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                photoSpot?.let { spot ->
-                    Text(
-                        text = "대전광역시", // 현재 대전이므로 고정값 사용 (필요시 photoSpot에서 확장)
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
-                    Text(
-                        text = "${spot.name} ${spot.id}", // 예: 유성구 대학로 291 (id를 주소로 가정)
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                } ?: Text("스팟 정보 없음", style = MaterialTheme.typography.bodyMedium)
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    repeat(3) {
-                        Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = "별점",
-                            tint = Color.Yellow,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "반쪽 별점",
-                        tint = Color.Yellow.copy(alpha = 0.5f),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "빈 별점",
-                        tint = Color.LightGray,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "3.5", style = MaterialTheme.typography.bodySmall)
+            if (photoSpot != null) {
+                PhotoDetailMapView(
+                    latitude = photoSpot.latitude,
+                    longitude = photoSpot.longitude,
+                    title = photoSpot.name,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("지도 정보 없음", color = Color.Gray)
                 }
             }
         }
@@ -335,15 +287,14 @@ fun ShootingTimeTabContent(photoMetadata: PhotoMetadata?, photoDetail: PhotoDeta
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text("파일 이름: ${metadata.filename}")
-        Text("F-넘버: ${metadata.fNumber}")
-        Text("초점 거리: ${metadata.focalLength}")
+        Text("F값: ${metadata.fNumber}")
+        Text("초점거리: ${metadata.focalLength}")
         Text("ISO: ${metadata.iso}")
-        Text("셔터 스피드: ${metadata.shutterSpeed}")
+        Text("셔터속도: ${metadata.shutterSpeed}")
         Text("렌즈: ${metadata.lensName}")
         Text("카메라: ${metadata.cameraName}")
         photoDetail?.let { detail ->
-            Text("타임스탬프: ${detail.timestamp}")
+            Text("촬영일시: ${detail.timestamp}")
         }
     } ?: Text("촬영 시간 정보 없음")
 }
@@ -369,4 +320,66 @@ fun ReviewsTabContent(photoReviews: List<PhotoReview>) {
     } else {
         Text("아직 리뷰가 없습니다.")
     }
+}
+
+@Composable
+fun PhotoDetailMapView(
+    latitude: Double,
+    longitude: Double,
+    title: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    
+    AndroidView(
+        factory = { context ->
+            MapView(context).apply {
+                // 지도 스타일 설정
+                mapboxMap.loadStyle(Style.MAPBOX_STREETS) { style ->
+                    // 카메라 위치 설정
+                    val cameraOptions = CameraOptions.Builder()
+                        .center(Point.fromLngLat(longitude, latitude))
+                        .zoom(14.0)
+                        .build()
+                    
+                    mapboxMap.setCamera(cameraOptions)
+                    
+                    // 마커 추가
+                    val annotationApi = annotations
+                    val pointAnnotationManager = annotationApi.createPointAnnotationManager()
+                    
+                    // 커스텀 마커 비트맵 생성
+                    val bitmap = android.graphics.Bitmap.createBitmap(80, 80, android.graphics.Bitmap.Config.ARGB_8888)
+                    val canvas = android.graphics.Canvas(bitmap)
+                    
+                    // 빨간색 원 그리기
+                    val paint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.RED
+                        isAntiAlias = true
+                    }
+                    canvas.drawCircle(40f, 40f, 30f, paint)
+                    
+                    // 흰색 테두리 추가
+                    val borderPaint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.WHITE
+                        this.style = android.graphics.Paint.Style.STROKE
+                        strokeWidth = 4f
+                        isAntiAlias = true
+                    }
+                    canvas.drawCircle(40f, 40f, 30f, borderPaint)
+                    
+                    // 스타일에 이미지 추가
+                    style.addImage("detail-marker", bitmap)
+                    
+                    val pointAnnotationOptions = PointAnnotationOptions()
+                        .withPoint(Point.fromLngLat(longitude, latitude))
+                        .withIconImage("detail-marker")
+                        .withIconSize(0.7)
+                    
+                    pointAnnotationManager.create(pointAnnotationOptions)
+                }
+            }
+        },
+        modifier = modifier
+    )
 }

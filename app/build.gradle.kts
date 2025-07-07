@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,6 +21,19 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // local.properties에서 Mapbox 토큰 읽기
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(localPropertiesFile.inputStream())
+        }
+        
+        val mapboxToken = localProperties.getProperty("MAPBOX_ACCESS_TOKEN", "")
+        println("Mapbox Token length: ${mapboxToken.length}")
+        
+        buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"$mapboxToken\"")
+        manifestPlaceholders["MAPBOX_ACCESS_TOKEN"] = mapboxToken
     }
 
     buildTypes {
@@ -39,6 +54,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true  // BuildConfig 활성화 (중요!)
     }
     hilt {
         enableAggregatingTask = false
@@ -59,7 +75,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.appcompat:appcompat:1.6.1")
 
-    implementation("androidx.compose.material:material-icons-extended") //이거 navigation bar의 icon때문에 넣었음
+    implementation("androidx.compose.material:material-icons-extended")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -85,14 +101,15 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    // kapt를 사용하는 경우 testImplementation 및 androidTestImplementation에도 추가해야 할 수 있습니다.
-    // kaptTest(libs.hilt.android.compiler)
-    // kaptAndroidTest(libs.hilt.android.compiler)
-
     implementation(libs.compose.runtime.livedata)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    // Mapbox
+    implementation(libs.mapbox.android)
+    implementation(libs.mapbox.compose)
+
 }

@@ -28,10 +28,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shutterup.viewmodel.PhotoSpotDetailViewModel
+import com.example.shutterup.BuildConfig
+import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.MapView
+import com.mapbox.maps.Style
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 
 @Composable
 fun PhotoSpotDetailView(
@@ -207,36 +216,35 @@ fun PhotoSpotDetailContent(
             }
         }
 
-        // 지도와 위치 정보 섹션
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // 지도 플레이스홀더
-            Box(
-                modifier = Modifier
-                    .background(Color.LightGray, RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("지도", fontSize = 16.sp)
-            }
-        }
-
-        // 좌표 정보
+        // 지도 섹션
         Text(
-            text = "${String.format("%.0f", photoSpot.latitude)}°${String.format("%02d", ((photoSpot.latitude % 1) * 60).toInt())}'${String.format("%02d", (((photoSpot.latitude % 1) * 60 % 1) * 60).toInt())}\"S ${String.format("%.0f", photoSpot.longitude)}°${String.format("%02d", ((photoSpot.longitude % 1) * 60).toInt())}'${String.format("%02d", (((photoSpot.longitude % 1) * 60 % 1) * 60).toInt())}\"E",
+            text = "위치",
             fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        
+        // Mapbox 지도
+        MapboxMap(
+            latitude = photoSpot.latitude,
+            longitude = photoSpot.longitude,
+            title = photoSpot.name,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .height(250.dp)
+                .padding(horizontal = 16.dp)
+                .clip(RoundedCornerShape(16.dp))
         )
 
         // 사진 갤러리
         if (photoMetadataList.isNotEmpty()) {
+            Text(
+                text = "사진 갤러리",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+            
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier
@@ -290,6 +298,13 @@ fun PhotoSpotDetailContent(
                 }
             }
         } else {
+            Text(
+                text = "사진 갤러리",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+            
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -306,4 +321,66 @@ fun PhotoSpotDetailContent(
 
         Spacer(modifier = Modifier.height(100.dp)) // 하단 네비게이션 공간
     }
+}
+
+@Composable
+fun MapboxMap(
+    latitude: Double,
+    longitude: Double,
+    title: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    
+    AndroidView(
+        factory = { context ->
+            MapView(context).apply {
+                // 지도 스타일 설정
+                mapboxMap.loadStyle(Style.MAPBOX_STREETS) { style ->
+                    // 카메라 위치 설정
+                    val cameraOptions = CameraOptions.Builder()
+                        .center(Point.fromLngLat(longitude, latitude))
+                        .zoom(14.0)
+                        .build()
+                    
+                    mapboxMap.setCamera(cameraOptions)
+                    
+                    // 마커 추가 - 더 간단한 방법 사용
+                    val annotationApi = annotations
+                    val pointAnnotationManager = annotationApi.createPointAnnotationManager()
+                    
+                    // 커스텀 마커 비트맵 생성
+                    val bitmap = android.graphics.Bitmap.createBitmap(100, 100, android.graphics.Bitmap.Config.ARGB_8888)
+                    val canvas = android.graphics.Canvas(bitmap)
+                    
+                    // 빨간색 원 그리기
+                    val paint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.RED
+                        isAntiAlias = true
+                    }
+                    canvas.drawCircle(50f, 50f, 40f, paint)
+                    
+                    // 흰색 테두리 추가
+                    val borderPaint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.WHITE
+                        this.style = android.graphics.Paint.Style.STROKE
+                        strokeWidth = 6f
+                        isAntiAlias = true
+                    }
+                    canvas.drawCircle(50f, 50f, 40f, borderPaint)
+                    
+                    // 스타일에 이미지 추가
+                    style.addImage("custom-marker", bitmap)
+                    
+                    val pointAnnotationOptions = PointAnnotationOptions()
+                        .withPoint(Point.fromLngLat(longitude, latitude))
+                        .withIconImage("custom-marker")
+                        .withIconSize(0.8)
+                    
+                    pointAnnotationManager.create(pointAnnotationOptions)
+                }
+            }
+        },
+        modifier = modifier
+    )
 }
