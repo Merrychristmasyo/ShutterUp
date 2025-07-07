@@ -1,0 +1,252 @@
+[
+  {
+    "userId": "user_001",
+    "camera": "Canon EOS R5",
+    "bio": "Landscape photographer and coffee addict."
+  },
+  {
+    "userId": "user_002",
+    "camera": "Nikon Z6 II",
+    "bio": "Capturing moments, one click at a time."
+  },
+  {
+    "userId": "user_003",
+    "camera": "Sony α7 IV",
+    "bio": "Freelance portrait photographer based in Seoul."
+  },
+  {
+    "userId": "user_004",
+    "camera": "Fujifilm X-T5",
+    "bio": "Film simulation enthusiast."
+  },
+  {
+    "userId": "user_005",
+    "camera": "Leica M10-R",
+    "bio": "Traveler and documentary shooter."
+  },
+  {
+    "userId": "user_006",
+    "camera": "Olympus OM-D E-M10 Mark IV",
+    "bio": "Street photographer with a love for vintage vibes."
+  },
+  {
+    "userId": "user_007",
+    "camera": "Pentax K-1 II",
+    "bio": "Nature lover. Hiking and snapping everywhere I go."
+  },
+  {
+    "userId": "user_008",
+    "camera": "Canon EOS 90D",
+    "bio": "Bird watcher and wildlife explorer."
+  },
+  {
+    "userId": "user_009",
+    "camera": "Nikon D7500",
+    "bio": "Wedding photographer by day, gamer by night."
+  },
+  {
+    "userId": "user_010",
+    "camera": "Sony α6400",
+    "bio": "Minimalist photography with a love for symmetry."
+  },
+  {
+    "userId": "user_011",
+    "camera": "Fujifilm X100V",
+    "bio": "Capturing daily life in analog tones."
+  },
+  {
+    "userId": "user_012",
+    "camera": "Canon EOS Rebel T8i",
+    "bio": "Aspiring visual storyteller."
+  },
+  {
+    "userId": "user_013",
+    "camera": "Nikon Z9",
+    "bio": "Motorsports and fast action expert."
+  },
+  {
+    "userId": "user_014",
+    "camera": "Sony α1",
+    "bio": "Tech geek and photography nerd."
+  },
+  {
+    "userId": "user_015",
+    "camera": "Fujifilm GFX100",
+    "bio": "Fine art photographer exploring texture and tone."
+  },
+  {
+    "userId": "user_016",
+    "camera": "Canon EOS M50 Mark II",
+    "bio": "Content creator & vlogger based in Tokyo."
+  },
+  {
+    "userId": "user_017",
+    "camera": "Nikon D3500",
+    "bio": "Just started learning photography!"
+  },
+  {
+    "userId": "user_018",
+    "camera": "Sony RX100 VII",
+    "bio": "Everyday carry and travel snapshots."
+  },
+  {
+    "userId": "user_019",
+    "camera": "Fujifilm X-Pro3",
+    "bio": "Film soul in a digital body."
+  },
+  {
+    "userId": "user_020",
+    "camera": "Leica Q2",
+    "bio": "Luxury street shooter. Monochrome vibes."
+  },
+  {
+    "userId": "user_021",
+    "camera": "Panasonic Lumix S5II",
+    "bio": "Filmmaker and color grading fanatic."
+  },
+  {
+    "userId": "user_022",
+    "camera": "Canon EOS R10",
+    "bio": "Love candid moments and golden hour."
+  },
+  {
+    "userId": "user_023",
+    "camera": "Nikon Z fc",
+    "bio": "Old-school look, modern performance."
+  },
+  {
+    "userId": "user_024",
+    "camera": "Sony ZV-E10",
+    "bio": "Vlogging everyday life with style."
+  },
+  {
+    "userId": "user_025",
+    "camera": "Fujifilm X-E4",
+    "bio": "Documenting small town life."
+  },
+  {
+    "userId": "user_026",
+    "camera": "Canon PowerShot G7 X Mark III",
+    "bio": "Foodie with a camera. Always hungry."
+  },
+  {
+    "userId": "user_027",
+    "camera": "Olympus PEN-F",
+    "bio": "Retro design lover and fashion photographer."
+  },
+  {
+    "userId": "user_028",
+    "camera": "Pentax KP",
+    "bio": "Moody landscapes and mountain trails."
+  },
+  {
+    "userId": "user_029",
+    "camera": "Sony α7R V",
+    "bio": "Pixel peeper. Chasing sharpness."
+  },
+  {
+    "userId": "user_030",
+    "camera": "Leica SL2",
+    "bio": "Architecture and high-contrast forms."
+  },
+  {
+    "userId": "user_031",
+    "camera": "Canon EOS 5D Mark IV",
+    "bio": "Freelancer since 2015, loving every frame."
+  },
+  {
+    "userId": "user_032",
+    "camera": "Nikon D850",
+    "bio": "Capturing weddings & emotions worldwide."
+  },
+  {
+    "userId": "user_033",
+    "camera": "Sony α7C",
+    "bio": "Compact full-frame for a compact lifestyle."
+  },
+  {
+    "userId": "user_034",
+    "camera": "Fujifilm X-T30 II",
+    "bio": "Coffee, cats, and city lights."
+  },
+  {
+    "userId": "user_035",
+    "camera": "Leica CL",
+    "bio": "Quiet streets and analog rhythm."
+  },
+  {
+    "userId": "user_036",
+    "camera": "Canon EOS R6 II",
+    "bio": "Action, events, and candid joy."
+  },
+  {
+    "userId": "user_037",
+    "camera": "Nikon Z8",
+    "bio": "Shooting raw stories in urban chaos."
+  },
+  {
+    "userId": "user_038",
+    "camera": "Sony FX3",
+    "bio": "Cinematographer chasing cinematic light."
+  },
+  {
+    "userId": "user_039",
+    "camera": "Fujifilm X100VI",
+    "bio": "All in one. Streets, strangers, soul."
+  },
+  {
+    "userId": "user_040",
+    "camera": "Panasonic GH6",
+    "bio": "Micro Four Thirds, macro ideas."
+  },
+  {
+    "userId": "user_041",
+    "camera": "Canon EOS 6D",
+    "bio": "Lifestyle and slow living moments."
+  },
+  {
+    "userId": "user_042",
+    "camera": "Nikon Z30",
+    "bio": "Young and curious. Capturing campus life."
+  },
+  {
+    "userId": "user_043",
+    "camera": "Sony α6700",
+    "bio": "Skateboarding, sunsets, and bokeh."
+  },
+  {
+    "userId": "user_044",
+    "camera": "Fujifilm X-T200",
+    "bio": "Soft colors and silent mornings."
+  },
+  {
+    "userId": "user_045",
+    "camera": "Leica M6",
+    "bio": "Film forever. Manual everything."
+  },
+  {
+    "userId": "user_046",
+    "camera": "Canon AE-1 Program",
+    "bio": "Student of light and shadows."
+  },
+  {
+    "userId": "user_047",
+    "camera": "Nikon F3",
+    "bio": "Retro photographer in a digital world."
+  },
+  {
+    "userId": "user_048",
+    "camera": "Sony α9 II",
+    "bio": "Sports, speed, and shutter bursts."
+  },
+  {
+    "userId": "user_049",
+    "camera": "Fujifilm X-S20",
+    "bio": "YouTuber with a love for slow motion."
+  },
+  {
+    "userId": "user_050",
+    "camera": "Canon EOS R7",
+    "bio": "Urban jungle and moody edits."
+  }
+]

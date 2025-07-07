@@ -8,4 +8,5 @@ import androidx.compose.ui.graphics.vector.ImageVector
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object PhotoList : Screen("photo_list", "사진 갤러리", Icons.Default.Photo)
     object PhotoSpotList : Screen("photo_spot_list", "포토 스팟", Icons.Default.List)
+    object ProfileList : Screen("profile_list", "사용자 정보", Icons.Default.List)
 }

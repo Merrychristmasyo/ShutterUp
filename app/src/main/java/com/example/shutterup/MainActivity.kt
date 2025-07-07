@@ -13,7 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.example.shutterup.ui.theme.ShutterUpTheme
 import com.example.shutterup.view.PhotoListView
 import com.example.shutterup.view.PhotoSpotListView
-
+import com.example.shutterup.view.ProfileListView
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -58,6 +58,9 @@ class MainActivity : ComponentActivity() {
                             composable(Screen.PhotoSpotList.route) {
                                 PhotoSpotListView()
                             }
+                            composable(Screen.ProfileList.route) {
+                                ProfileListView()
+                            }
                         }
                     }
                 }
@@ -70,7 +73,8 @@ class MainActivity : ComponentActivity() {
 fun BottomNavigationBar(navController: NavController) {
     val screens = listOf(
         Screen.PhotoList,
-        Screen.PhotoSpotList
+        Screen.PhotoSpotList,
+        Screen.ProfileList
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
