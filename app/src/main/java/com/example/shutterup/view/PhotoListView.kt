@@ -1,8 +1,6 @@
 // com.example.shutterup.view.PhotoListView.kt
 package com.example.shutterup.view
 
-import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,15 +23,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.shutterup.viewmodel.PhotoListViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.shutterup.navigation.Screen
+import com.example.shutterup.viewmodel.PhotoListViewModel
 import java.util.Collections
 
 @Composable
 fun PhotoListView(
     viewModel: PhotoListViewModel = hiltViewModel(),
+    onPhotoClick: (String) -> Unit
 ) {
-    val photos by viewModel.photos.observeAsState(initial = Collections.emptyList())
+    val photoMetadata by viewModel.photoMetadata.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
     val errorMessage by viewModel.errorMessage.observeAsState(initial = null)
 
@@ -67,14 +67,14 @@ fun PhotoListView(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "에러 발생: ${errorMessage}",
+                    text = "에러 발생: $errorMessage",
                     color = Color.Red,
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(16.dp)
                 )
             }
-        } else if (photos.isEmpty()) {
+        } else if (photoMetadata.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -97,9 +97,8 @@ fun PhotoListView(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(photos.size) { index ->
-                    var expanded by remember { mutableStateOf(false) }
-                    val photoMetadata = photos[index]
+                items(photoMetadata.size) { index ->
+                    val photoMetadata = photoMetadata[index]
 
                     val drawableResId = remember(photoMetadata.filename) {
                         context.resources.getIdentifier(
@@ -112,7 +111,9 @@ fun PhotoListView(
                     Box(
                         modifier = Modifier
                             .aspectRatio(1f)
-                            .clickable { expanded = true }
+                            .clickable {
+                                onPhotoClick(photoMetadata.id)
+                            }
                     ) {
                         if (drawableResId != 0) {
                             AsyncImage(
@@ -136,26 +137,6 @@ fun PhotoListView(
                             ) {
                                 Text("이미지 없음", color = Color.DarkGray)
                             }
-                        }
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("장소보기") },
-                                onClick = {
-                                    expanded = false
-                                    Toast.makeText(context, "장소: ${photoMetadata.photoSpotId ?: "정보 없음"}", Toast.LENGTH_SHORT).show()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("사진 자세히 보기 (ID: ${photoMetadata.id})") },
-                                onClick = {
-                                    expanded = false
-                                    Toast.makeText(context, "ID: ${photoMetadata.id}, 설명: ${photoMetadata.description ?: "없음"}", Toast.LENGTH_SHORT).show()
-                                }
-                            )
                         }
                     }
                 }

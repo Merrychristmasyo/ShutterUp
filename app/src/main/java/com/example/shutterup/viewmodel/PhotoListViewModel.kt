@@ -7,9 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.shutterup.model.PhotoMetadata
 import com.example.shutterup.repository.PhotoMetadataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,7 +15,7 @@ class PhotoListViewModel @Inject constructor(
     private val photoMetadataRepository: PhotoMetadataRepository
 ): ViewModel() {
     private val _photoMetadata = MutableLiveData<List<PhotoMetadata>>()
-    val photos: LiveData<List<PhotoMetadata>> = _photoMetadata
+    val photoMetadata: LiveData<List<PhotoMetadata>> = _photoMetadata
 
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
@@ -26,23 +24,28 @@ class PhotoListViewModel @Inject constructor(
     val errorMessage: LiveData<String?> = _errorMessage
 
     init {
-        loadPhotos()
+        loadData()
     }
 
-    private fun loadPhotos() {
+    private fun loadData() {
+        if (_isLoading.value == true) return // 중복 호출 방지
+
         _isLoading.value = true
         _errorMessage.value = null
-        viewModelScope.launch(Dispatchers.IO) {
+
+        viewModelScope.launch {
             try {
-                val photoMetadataList = photoMetadataRepository.getAllPhotoMetadata() // ✅ 메서드 호출 변경
-                withContext(Dispatchers.Main) {
-                    _photoMetadata.value = photoMetadataList
-                }
+                val fetchedPhotoMetadata = photoMetadataRepository.getAllPhotoMetadata()
+
+                _photoMetadata.value = fetchedPhotoMetadata
+
             } catch (e: Exception) {
-                _errorMessage.postValue("사진 메타데이터를 로드하는 데 실패했습니다: ${e.localizedMessage}")
+                _errorMessage.value = "Failed to load photo detail data: ${e.message}"
+                _photoMetadata.value = emptyList()
             } finally {
-                _isLoading.postValue(false)
+                _isLoading.value = false
             }
         }
     }
+
 }
