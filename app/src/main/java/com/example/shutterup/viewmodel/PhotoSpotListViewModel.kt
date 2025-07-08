@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.math.*
 
 @HiltViewModel
 class PhotoSpotListViewModel @Inject constructor(
@@ -31,8 +32,66 @@ class PhotoSpotListViewModel @Inject constructor(
     private val _errorMessage = MutableLiveData<String?>(null)
     val errorMessage: LiveData<String?> = _errorMessage
 
+    // 사용자 위치 정보
+    private val _userLocation = MutableLiveData<Pair<Double, Double>?>(null)
+    val userLocation: LiveData<Pair<Double, Double>?> = _userLocation
+
+    // 거리순으로 정렬된 포토스팟 목록
+    private val _sortedPhotoSpots = MutableLiveData<List<PhotoSpot>>()
+    val sortedPhotoSpots: LiveData<List<PhotoSpot>> = _sortedPhotoSpots
+
+    // 검색 기능
+    private val _searchQuery = MutableLiveData<String>("")
+    val searchQuery: LiveData<String> = _searchQuery
+
+    private val _filteredPhotoSpots = MutableLiveData<List<PhotoSpot>>()
+    val filteredPhotoSpots: LiveData<List<PhotoSpot>> = _filteredPhotoSpots
+
     init {
         loadPhotoSpots()
+    }
+
+    fun updateUserLocation(latitude: Double, longitude: Double) {
+        _userLocation.value = Pair(latitude, longitude)
+        updateSortedPhotoSpots()
+    }
+
+    private fun updateSortedPhotoSpots() {
+        val currentPhotoSpots = _photoSpots.value ?: emptyList()
+        val currentUserLocation = _userLocation.value
+        
+        if (currentUserLocation != null) {
+            val sorted = currentPhotoSpots.sortedBy { photoSpot ->
+                calculateDistance(
+                    currentUserLocation.first, currentUserLocation.second,
+                    photoSpot.latitude, photoSpot.longitude
+                )
+            }
+            _sortedPhotoSpots.value = sorted
+        } else {
+            _sortedPhotoSpots.value = currentPhotoSpots
+        }
+        
+        // 정렬 후 검색 필터링도 업데이트
+        applySearchFilter()
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+        applySearchFilter()
+    }
+
+    private fun applySearchFilter() {
+        val query = _searchQuery.value?.trim() ?: ""
+        val currentSortedPhotoSpots = _sortedPhotoSpots.value ?: emptyList()
+        
+        _filteredPhotoSpots.value = if (query.isEmpty()) {
+            currentSortedPhotoSpots
+        } else {
+            currentSortedPhotoSpots.filter { photoSpot ->
+                photoSpot.name.contains(query, ignoreCase = true)
+            }
+        }
     }
 
     private fun loadPhotoSpots() {
@@ -45,6 +104,7 @@ class PhotoSpotListViewModel @Inject constructor(
                 val fetchedThumbnailPhotoMetadataList = photoMetadataRepository.getThumbnailPhotoMetadataList()
                 _photoSpots.value = fetchedPhotoSpots
                 _thumbnailPhotoMetadataList.value = fetchedThumbnailPhotoMetadataList
+                updateSortedPhotoSpots() // 포토스팟 로드 후 정렬 업데이트
             } catch (e: Exception) {
                 _errorMessage.value = "Failed to load photo spots : ${e.message}"
                 _photoSpots.value = emptyList()
@@ -53,5 +113,21 @@ class PhotoSpotListViewModel @Inject constructor(
                 _isLoading.value = false
             }
         }
+    }
+
+    // 두 지점 간의 직선 거리 계산 (Haversine 공식)
+    private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val earthRadius = 6371.0 // 지구 반지름 (km)
+        
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2)
+        
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        
+        return earthRadius * c
     }
 }

@@ -45,17 +45,25 @@ android {
             )
         }
     }
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    
     kotlinOptions {
         jvmTarget = "11"
     }
+    
     buildFeatures {
         compose = true
         buildConfig = true  // BuildConfig 활성화 (중요!)
     }
+    
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.10"
+    }
+    
     hilt {
         enableAggregatingTask = false
     }
@@ -113,5 +121,8 @@ dependencies {
     // Mapbox
     implementation(libs.mapbox.android)
     implementation(libs.mapbox.compose)
+
+    // Google Play Services Location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
 }

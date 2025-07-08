@@ -71,8 +71,8 @@ class MainActivity : ComponentActivity() {
 
                             composable(Screen.PhotoSpotList.route) {
                                 PhotoSpotListView(
-                                    onPhotoSpotClick = { photoSpotId ->
-                                        navController.navigate(Screen.PhotoSpotDetail.createRoute(photoSpotId))
+                                    onPhotoClick = { photoId ->
+                                        navController.navigate(Screen.PhotoDetail.createRoute(photoId))
                                     }
                                 )
                             }
@@ -180,7 +180,7 @@ fun BottomNavigationBar(navController: NavController) {
 
             NavigationBarItem(
                 icon = { Icon(imageVector = screen.icon, contentDescription = screen.title) },
-                label = { Text(screen.title) },
+                // label = { Text(screen.title) },
                 selected = isSelected,
                 onClick = {
                     if (currentRoute != screen.route) {
