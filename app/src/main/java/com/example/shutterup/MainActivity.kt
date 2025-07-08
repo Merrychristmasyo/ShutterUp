@@ -17,7 +17,6 @@ import com.example.shutterup.view.PhotoDetailView
 import com.example.shutterup.view.ProfileListView
 import com.example.shutterup.view.PhotoSpotDetailView
 import com.example.shutterup.view.ProfileDetailView
-
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -145,9 +144,11 @@ class MainActivity : ComponentActivity() {
                                 arguments = listOf(navArgument("userId") { type = NavType.StringType })
                             ) { backStack ->
                                 val userId = backStack.arguments?.getString("userId")!!
+                                println("userid: $userId")
                                 ProfileDetailView(
                                     userId = userId,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onProfileClick = { /* 필요 없으면 빈 람다 */ }
                                 )
                             }
 
