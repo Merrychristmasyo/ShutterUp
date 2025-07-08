@@ -167,7 +167,8 @@ class PhotoUploadViewModel @Inject constructor(
             lensName = uploadData.lensName,
             cameraName = uploadData.cameraName,
             photoSpotId = photoSpot.id,
-            shootingMethod = uploadData.shootingMethod
+            shootingMethod = uploadData.shootingMethod,
+            userId = "user_001"
         )
 
         return PhotoModels(photoSpot, photoDetail, photoMetadata)

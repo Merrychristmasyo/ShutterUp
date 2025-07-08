@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PhotoMetadata(
-    val id: String,
+    val id: String, //사진 id
     val filename: String,
     val description: String,
     val tags: List<String>,
@@ -15,5 +15,6 @@ data class PhotoMetadata(
     val lensName: String,
     val cameraName: String,
     val photoSpotId: String,
-    val shootingMethod: String
+    val shootingMethod: String,
+    val userId: String //사용자 id
 )
