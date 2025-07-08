@@ -40,6 +40,13 @@ class PhotoSpotListViewModel @Inject constructor(
     private val _sortedPhotoSpots = MutableLiveData<List<PhotoSpot>>()
     val sortedPhotoSpots: LiveData<List<PhotoSpot>> = _sortedPhotoSpots
 
+    // 검색 기능
+    private val _searchQuery = MutableLiveData<String>("")
+    val searchQuery: LiveData<String> = _searchQuery
+
+    private val _filteredPhotoSpots = MutableLiveData<List<PhotoSpot>>()
+    val filteredPhotoSpots: LiveData<List<PhotoSpot>> = _filteredPhotoSpots
+
     init {
         loadPhotoSpots()
     }
@@ -63,6 +70,27 @@ class PhotoSpotListViewModel @Inject constructor(
             _sortedPhotoSpots.value = sorted
         } else {
             _sortedPhotoSpots.value = currentPhotoSpots
+        }
+        
+        // 정렬 후 검색 필터링도 업데이트
+        applySearchFilter()
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+        applySearchFilter()
+    }
+
+    private fun applySearchFilter() {
+        val query = _searchQuery.value?.trim() ?: ""
+        val currentSortedPhotoSpots = _sortedPhotoSpots.value ?: emptyList()
+        
+        _filteredPhotoSpots.value = if (query.isEmpty()) {
+            currentSortedPhotoSpots
+        } else {
+            currentSortedPhotoSpots.filter { photoSpot ->
+                photoSpot.name.contains(query, ignoreCase = true)
+            }
         }
     }
 

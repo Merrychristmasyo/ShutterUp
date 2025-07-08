@@ -26,8 +26,11 @@ import kotlin.math.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -69,10 +72,13 @@ fun PhotoSpotListView(
     val errorMessage by viewModel.errorMessage.observeAsState(initial = null)
     val userLocation by viewModel.userLocation.observeAsState(initial = null)
     val sortedPhotoSpots by viewModel.sortedPhotoSpots.observeAsState(initial = emptyList<PhotoSpot>())
+    val filteredPhotoSpots by viewModel.filteredPhotoSpots.observeAsState(initial = emptyList<PhotoSpot>())
+    val searchQuery by viewModel.searchQuery.observeAsState(initial = "")
     
     var selectedPhotoSpot by remember { mutableStateOf<PhotoSpot?>(null) }
     var showBottomSheet by remember { mutableStateOf(true) } // 초기에 BottomSheet 표시
     var bottomSheetHeight by remember { mutableStateOf(350.dp) } // 초기 높이를 적절하게 설정
+    var shouldApplyPadding by remember { mutableStateOf(false) } // 패딩 적용 여부를 추적하는 상태 추가
     
     // 위치 관련 상태
     val context = LocalContext.current
@@ -180,23 +186,46 @@ fun PhotoSpotListView(
     
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val screenHeight = maxHeight
-        val minHeight = 200.dp // 최소 높이
+        val minHeight = 80.dp // 최소 높이
         val maxHeight = screenHeight * 0.8f // 최대 높이 (화면의 80%)
         
         // 1. Mapbox 지도 (전체 화면)
         Box(modifier = Modifier.fillMaxSize()) {
             PhotoSpotMapView(
-                photoSpots = sortedPhotoSpots,
+                photoSpots = filteredPhotoSpots, // 검색 결과를 지도에 표시
                 selectedPhotoSpot = selectedPhotoSpot,
                 bottomSheetHeight = bottomSheetHeight,
+                shouldApplyPadding = shouldApplyPadding, // 패딩 적용 여부 전달
                 userLocation = userLocation,
                 onMarkerClick = { photoSpot ->
-                    selectedPhotoSpot = photoSpot // 포토스팟 리스트 클릭과 동일한 동작
+                    selectedPhotoSpot = photoSpot
+                    shouldApplyPadding = true // 마커 클릭 시 패딩 적용
                 },
                 modifier = Modifier.fillMaxSize()
             )
             
-
+            // Floating 검색창 또는 포토스팟 이름 표시
+            if (selectedPhotoSpot == null) {
+                FloatingSearchBar(
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { query ->
+                        viewModel.setSearchQuery(query)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .align(Alignment.TopCenter)
+                )
+            } else {
+                FloatingPhotoSpotTitle(
+                    photoSpotName = selectedPhotoSpot!!.name,
+                    onBackClick = { selectedPhotoSpot = null },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .align(Alignment.TopCenter)
+                )
+            }
         }
 
         // 2. 커스텀 BottomSheet - 항상 표시
@@ -210,6 +239,7 @@ fun PhotoSpotListView(
                     state = rememberDraggableState { delta ->
                         val newHeight = bottomSheetHeight - delta.dp
                         bottomSheetHeight = newHeight.coerceIn(minHeight, maxHeight)
+                        shouldApplyPadding = false // BottomSheet 움직일 때 패딩 제거
                     }
                 ),
             onDismiss = { 
@@ -220,23 +250,24 @@ fun PhotoSpotListView(
             if (selectedPhotoSpot == null) {
                 // 전체 포토스팟 목록 (초기 화면)
                 PhotoSpotBottomSheetContent(
-                    photoSpots = sortedPhotoSpots,
+                    photoSpots = filteredPhotoSpots, // 검색 결과를 리스트에 표시
                     thumbnailPhotoMetadataList = thumbnailPhotoMetadataList,
                     isLoading = isLoading,
                     errorMessage = errorMessage,
                     userLocation = userLocation,
+                    searchQuery = searchQuery,
                     onLocationUpdate = { lat, lng ->
                         viewModel.updateUserLocation(lat, lng)
                     },
                     onPhotoSpotClick = { photoSpot ->
                         selectedPhotoSpot = photoSpot
+                        shouldApplyPadding = true // 포토스팟 클릭 시 패딩 적용
                     }
                 )
             } else {
                 // 선택된 스팟의 사진 그리드 (상세 화면)
                 PhotoSpotDetailBottomSheet(
                     photoSpot = selectedPhotoSpot!!,
-                    onBackClick = { selectedPhotoSpot = null },
                     onPhotoClick = onPhotoClick
                 )
             }
@@ -269,7 +300,7 @@ fun CustomBottomSheet(
                         RoundedCornerShape(2.dp)
                     )
                     .align(Alignment.CenterHorizontally)
-                    .padding(top = 8.dp)
+                    .padding(top = 16.dp) // 8.dp에서 16.dp로 변경하여 더 아래로 내림
             )
             
             Spacer(modifier = Modifier.height(8.dp))
@@ -285,6 +316,7 @@ fun PhotoSpotMapView(
     photoSpots: List<PhotoSpot>,
     selectedPhotoSpot: PhotoSpot?,
     bottomSheetHeight: androidx.compose.ui.unit.Dp,
+    shouldApplyPadding: Boolean, // 패딩 적용 여부 매개변수 추가
     userLocation: Pair<Double, Double>?,
     onMarkerClick: (PhotoSpot) -> Unit,
     modifier: Modifier = Modifier
@@ -324,14 +356,16 @@ fun PhotoSpotMapView(
             mapView.mapboxMap.getStyle { style ->
                 // 선택된 포토스팟이 있으면 해당 위치로 카메라 이동
                 selectedPhotoSpot?.let { photoSpot ->
-                    // BottomSheet 높이를 픽셀로 변환
-                    val density = context.resources.displayMetrics.density
-                    val bottomSheetHeightPx = bottomSheetHeight.value * density
-                    
-                    val cameraOptions = CameraOptions.Builder()
+                    val cameraOptionsBuilder = CameraOptions.Builder()
                         .center(Point.fromLngLat(photoSpot.longitude, photoSpot.latitude))
                         .zoom(15.0) // 더 가까이 줌인
-                        .padding(
+                    
+                    // 패딩 적용 여부에 따라 조건부로 패딩 추가
+                    if (shouldApplyPadding) {
+                        val density = context.resources.displayMetrics.density
+                        val bottomSheetHeightPx = bottomSheetHeight.value * density
+                        
+                        cameraOptionsBuilder.padding(
                             com.mapbox.maps.EdgeInsets(
                                 0.0, // top
                                 0.0, // left  
@@ -339,9 +373,9 @@ fun PhotoSpotMapView(
                                 0.0  // right
                             )
                         )
-                        .build()
+                    }
                     
-                    mapView.mapboxMap.setCamera(cameraOptions)
+                    mapView.mapboxMap.setCamera(cameraOptionsBuilder.build())
                 } ?: run {
                     // 선택된 포토스팟이 없고 사용자 위치가 있으면 사용자 위치 중심으로
                     userLocation?.let { location ->
@@ -493,6 +527,7 @@ fun PhotoSpotBottomSheetContent(
     isLoading: Boolean,
     errorMessage: String?,
     userLocation: Pair<Double, Double>?,
+    searchQuery: String,
     onLocationUpdate: (Double, Double) -> Unit,
     onPhotoSpotClick: (PhotoSpot) -> Unit
 ) {
@@ -501,46 +536,6 @@ fun PhotoSpotBottomSheetContent(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        // 헤더
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "포토스팟",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            
-            // 위치 상태 및 테스트 버튼
-            Column {
-                // 위치 추적 상태 표시
-                if (userLocation != null) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = "Location",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "위치: ${String.format("%.4f", userLocation.first)}, ${String.format("%.4f", userLocation.second)}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                
-
-            }
-        }
         
         // 콘텐츠
         when {
@@ -582,16 +577,23 @@ fun PhotoSpotBottomSheetContent(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.LocationOn,
+                            imageVector = if (searchQuery.isNotEmpty()) Icons.Default.Search else Icons.Default.LocationOn,
                             contentDescription = "Empty",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(48.dp)
                         )
                         Text(
-                            text = "포토스팟이 없습니다.",
+                            text = if (searchQuery.isNotEmpty()) "검색 결과가 없습니다." else "포토스팟이 없습니다.",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        if (searchQuery.isNotEmpty()) {
+                            Text(
+                                text = "다른 검색어로 시도해보세요.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 }
             }
@@ -632,7 +634,6 @@ fun PhotoSpotBottomSheetContent(
 @Composable
 fun PhotoSpotDetailBottomSheet(
     photoSpot: PhotoSpot,
-    onBackClick: () -> Unit,
     onPhotoClick: (String) -> Unit
 ) {
     val viewModel: com.example.shutterup.viewmodel.PhotoSpotDetailViewModel = hiltViewModel()
@@ -649,28 +650,6 @@ fun PhotoSpotDetailBottomSheet(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        // 헤더 (뒤로가기 버튼 + 제목)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "뒤로가기",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            Text(
-                text = photoSpot.name,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 8.dp)
-            )
-        }
         
         // 사진 갤러리
         when {
@@ -893,6 +872,127 @@ fun PhotoSpotBottomSheetItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun FloatingPhotoSpotTitle(
+    photoSpotName: String,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 뒤로가기 버튼
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "뒤로가기",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // 포토스팟 이름
+            Text(
+                text = photoSpotName,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            
+            // 오른쪽 공백 (검색 버튼 자리)
+            Spacer(modifier = Modifier.width(24.dp))
+        }
+    }
+}
+
+@Composable
+fun FloatingSearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var inputText by remember { mutableStateOf(searchQuery) }
+    var isExpanded by remember { mutableStateOf(false) }
+    
+    // searchQuery가 변경될 때 inputText 동기화
+    LaunchedEffect(searchQuery) {
+        inputText = searchQuery
+    }
+
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 왼쪽 공백 (햄버거 버튼 자리)
+            Spacer(modifier = Modifier.width(24.dp))
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // 검색 텍스트필드
+            BasicTextField(
+                value = inputText,
+                onValueChange = { inputText = it },
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { isExpanded = true },
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                decorationBox = { innerTextField ->
+                    if (inputText.isEmpty()) {
+                        Text(
+                            text = "포토스팟 검색",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    innerTextField()
+                }
+            )
+            
+            // 검색 버튼
+            IconButton(
+                onClick = { onSearchQueryChange(inputText) },
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "검색",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
