@@ -16,6 +16,7 @@ import com.example.shutterup.view.PhotoSpotListView
 import com.example.shutterup.view.PhotoDetailView
 import com.example.shutterup.view.ProfileListView
 import com.example.shutterup.view.PhotoSpotDetailView
+import com.example.shutterup.view.ProfileDetailView
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.NavigationBar
@@ -24,6 +25,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
+
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -75,7 +78,11 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             composable(Screen.ProfileList.route) {
-                                ProfileListView()
+                                ProfileListView(
+                                    onProfileClick = { userId ->
+                                        navController.navigate(Screen.ProfileDetail.createRoute(userId))
+                                    }
+                                )
                             }
                             composable(
                                 route = Screen.PhotoDetail.route,
@@ -132,6 +139,18 @@ class MainActivity : ComponentActivity() {
                                     Text("오류: 포토 스팟 ID를 찾을 수 없습니다.")
                                 }
                             }
+
+                            composable(
+                                route = Screen.ProfileDetail.route,
+                                arguments = listOf(navArgument("userId") { type = NavType.StringType })
+                            ) { backStack ->
+                                val userId = backStack.arguments?.getString("userId")!!
+                                ProfileDetailView(
+                                    userId = userId,
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+
                         }
                     }
                 }

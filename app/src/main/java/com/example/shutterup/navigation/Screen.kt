@@ -20,4 +20,11 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object PhotoSpotDetail : Screen("photoSpotDetail/{photoSpotId}", "포토 스팟 상세", Icons.Filled.LocationOn) {
         fun createRoute(photoSpotId: String) = "photoSpotDetail/$photoSpotId"
     }
+    object ProfileDetail : Screen(
+        route = "profile_detail/{userId}",
+        title = "프로필 상세",
+        icon = Icons.Default.AccountCircle
+    ) {
+        fun createRoute(userId: String) = "profile_detail/$userId"
+    }
 }

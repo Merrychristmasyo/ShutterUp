@@ -48,11 +48,12 @@ import coil.compose.AsyncImage
 
 @Composable
 fun ProfileListView(
-    viewModel: ProfileListViewModel = hiltViewModel()
+        onProfileClick: (String) -> Unit,
+        viewModel: ProfileListViewModel = hiltViewModel()
 ) {
     val profiles by viewModel.profiles.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
-    val errorMessage by viewModel.errorMessage.observeAsState(initial = null)
+    val errorMessage by viewModel.errorMessage.observeAsState(null)
     var searchQuery by remember { mutableStateOf("") }
 
     Box(
@@ -133,7 +134,9 @@ fun ProfileListView(
                                 items = listForLetter,
                                 key = { profile -> profile.userId }
                             ) { profile ->
-                                ProfileListItem(profile = profile) { viewModel.onProfileClicked(it) }
+                                ProfileListItem(profile = profile) { clicked ->
+                                    onProfileClick(clicked.userId)
+                                }
                                 Divider()
                             }
                         }
