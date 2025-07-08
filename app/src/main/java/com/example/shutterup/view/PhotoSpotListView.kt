@@ -538,27 +538,7 @@ fun PhotoSpotBottomSheetContent(
                     }
                 }
                 
-                // 에뮬레이터용 위치 테스트 버튼
-                Row {
-                    TextButton(
-                        onClick = { onLocationUpdate(37.5665, 126.9780) }, // 서울 중심
-                        modifier = Modifier.padding(horizontal = 2.dp)
-                    ) {
-                        Text("서울", style = MaterialTheme.typography.labelSmall)
-                    }
-                    TextButton(
-                        onClick = { onLocationUpdate(37.5512, 126.9880) }, // 남산타워
-                        modifier = Modifier.padding(horizontal = 2.dp)
-                    ) {
-                        Text("남산", style = MaterialTheme.typography.labelSmall)
-                    }
-                    TextButton(
-                        onClick = { onLocationUpdate(37.5796, 126.977) }, // 경복궁
-                        modifier = Modifier.padding(horizontal = 2.dp)
-                    ) {
-                        Text("경복궁", style = MaterialTheme.typography.labelSmall)
-                    }
-                }
+
             }
         }
         
