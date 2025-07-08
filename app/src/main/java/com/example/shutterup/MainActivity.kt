@@ -160,7 +160,7 @@ fun BottomNavigationBar(navController: NavController) {
 
             NavigationBarItem(
                 icon = { Icon(imageVector = screen.icon, contentDescription = screen.title) },
-                label = { Text(screen.title) },
+                // label = { Text(screen.title) },
                 selected = isSelected,
                 onClick = {
                     if (currentRoute != screen.route) {

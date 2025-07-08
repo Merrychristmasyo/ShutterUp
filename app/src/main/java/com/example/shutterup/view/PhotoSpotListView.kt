@@ -1,98 +1,88 @@
 package com.example.shutterup.view
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.shutterup.model.PhotoSpot
-import com.example.shutterup.model.PhotoMetadata
-import com.example.shutterup.viewmodel.PhotoSpotListViewModel
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import androidx.compose.runtime.remember
-import java.util.Collections.emptyList
-
+import com.example.shutterup.model.PhotoSpot
+import com.example.shutterup.model.PhotoMetadata
+import com.example.shutterup.viewmodel.PhotoSpotListViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun PhotoSpotListView(
     viewModel: PhotoSpotListViewModel = hiltViewModel(),
     onPhotoSpotClick: (String) -> Unit = {}
 ) {
-    val photoSpots by viewModel.photoSpots.observeAsState(initial = emptyList())
-    val thumbnailPhotoMetadataList by viewModel.thumbnailPhotoMetadataList.observeAsState(initial = hashMapOf())
+    val photoSpots by viewModel.photoSpots.observeAsState(initial = emptyList<PhotoSpot>())
+    val thumbnailPhotoMetadataList by viewModel.thumbnailPhotoMetadataList.observeAsState(initial = hashMapOf<String, PhotoMetadata>())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
     val errorMessage by viewModel.errorMessage.observeAsState(initial = null)
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         when {
             isLoading -> {
-                CircularProgressIndicator()
-                Text("포토스팟 로딩 중...", modifier = Modifier.padding(top = 16.dp))
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.CircularProgressIndicator()
+                }
             }
             errorMessage != null -> {
-                Text(
-                    text = "오류: $errorMessage",
-                    color = androidx.compose.ui.graphics.Color.Red,
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "오류: $errorMessage",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
             photoSpots.isEmpty() -> {
-                Text(
-                    text = "포토스팟이 없습니다.",
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "포토스팟이 없습니다.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
             else -> {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        text = "전체 포토스팟",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(items = photoSpots, key = { it.id }) { photoSpot ->
-                            PhotoSpotListItem(
-                                photoSpot = photoSpot,
-                                thumbnailPhotoMetadata = thumbnailPhotoMetadataList[photoSpot.id]
-                            ) { clickedSpot ->
-                                onPhotoSpotClick(clickedSpot.id)
-                            }
-                            HorizontalDivider()
-                        }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(photoSpots, key = { it.id }) { photoSpot ->
+                        val thumbnail = thumbnailPhotoMetadataList[photoSpot.id]
+                        PlacePhotoListItem(
+                            photoSpot = photoSpot,
+                            thumbnailPhotoMetadata = thumbnail,
+                            onClick = { onPhotoSpotClick(photoSpot.id) }
+                        )
+                        Divider(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
                     }
                 }
             }
@@ -101,24 +91,26 @@ fun PhotoSpotListView(
 }
 
 @Composable
-fun PhotoSpotListItem(
+fun PlacePhotoListItem(
     photoSpot: PhotoSpot,
     thumbnailPhotoMetadata: PhotoMetadata?,
-    onClick: (PhotoSpot) -> Unit
+    onClick: () -> Unit
 ) {
     val context = LocalContext.current
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick(photoSpot) }
-            .padding(16.dp)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // 섬네일 이미지
+        // 썸네일
         Box(
             modifier = Modifier
-                .size(80.dp)
-                .clip(RoundedCornerShape(12.dp)),
+                .size(64.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF0F0F0)),
             contentAlignment = Alignment.Center
         ) {
             if (thumbnailPhotoMetadata != null) {
@@ -129,70 +121,63 @@ fun PhotoSpotListItem(
                         context.packageName
                     )
                 }
-
                 if (drawableResId != 0) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
                             .data(drawableResId)
                             .build(),
-                        contentDescription = "포토스팟 섬네일",
+                        contentDescription = "포토스팟 썸네일",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    // 이미지 로드 실패 시 기본 아이콘
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color(0xFF4FC3F7)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "📍",
-                            fontSize = 32.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            } else {
-                // 섬네일이 없을 때 기본 아이콘
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFF4FC3F7)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "📍",
-                        fontSize = 32.sp,
-                        textAlign = TextAlign.Center
+                    Icon(
+                        imageVector = Icons.Filled.LocationOn,
+                        contentDescription = "Placeholder",
+                        tint = Color.LightGray,
+                        modifier = Modifier.size(32.dp)
                     )
                 }
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.LocationOn,
+                    contentDescription = "Placeholder",
+                    tint = Color.LightGray,
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
-        
         Spacer(modifier = Modifier.width(16.dp))
-        
-        // 포토스팟 정보
+        // 텍스트 정보
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = photoSpot.name,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "위도: ${photoSpot.latitude}, 경도: ${photoSpot.longitude}",
-                fontSize = 14.sp,
-                color = Color.Gray
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(2.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.PhotoCamera,
+                    contentDescription = "사진 개수",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "${photoSpot.photoCount}장",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "사진 개수: ${photoSpot.photoCount}",
-                fontSize = 14.sp,
-                color = Color.Gray
+                text = "위도: %.4f, 경도: %.4f".format(photoSpot.latitude, photoSpot.longitude),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
