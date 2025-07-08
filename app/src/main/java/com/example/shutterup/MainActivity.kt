@@ -147,7 +147,7 @@ class MainActivity : ComponentActivity() {
                                 ProfileDetailView(
                                     userId = userId,
                                     onBack = { navController.popBackStack() },
-                                    //onProfileClick = { /* 필요 없으면 빈 람다 */ }
+                                    onProfileClick = { /* 필요 없으면 빈 람다 */ }
                                 )
                             }
 
