@@ -219,6 +219,9 @@ private fun PhotoGridItem(
             context.packageName
         )
     }
+    
+    // 좋아요 상태 관리
+    var isLiked by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -246,13 +249,13 @@ private fun PhotoGridItem(
                 contentAlignment = Alignment.TopEnd
             ) {
                 IconButton(
-                    onClick = { /* 좋아요 기능 */ },
+                    onClick = { isLiked = !isLiked },
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.FavoriteBorder,
-                        contentDescription = "Like",
-                        tint = Color.White,
+                        imageVector = if (isLiked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = if (isLiked) "Unlike" else "Like",
+                        tint = if (isLiked) Color(0xFF87CEEB) else Color.White, // 하늘색으로 변경
                         modifier = Modifier.size(20.dp)
                     )
                 }
