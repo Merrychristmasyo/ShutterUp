@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shutterup.model.PhotoSpot
+import com.example.shutterup.model.PhotoMetadata
+import com.example.shutterup.repository.PhotoMetadataRepository
 import com.example.shutterup.repository.PhotoSpotRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -13,11 +15,15 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class PhotoSpotViewModel @Inject constructor(
-    private val photoSpotRepository: PhotoSpotRepository
+class PhotoSpotListViewModel @Inject constructor(
+    private val photoSpotRepository: PhotoSpotRepository,
+    private val photoMetadataRepository: PhotoMetadataRepository
 ): ViewModel() {
     private val _photoSpots = MutableLiveData<List<PhotoSpot>>()
     val photoSpots: LiveData<List<PhotoSpot>> = _photoSpots
+
+    private val _thumbnailPhotoMetadataList = MutableLiveData<HashMap<String, PhotoMetadata>>()
+    val thumbnailPhotoMetadataList: LiveData<HashMap<String, PhotoMetadata>> = _thumbnailPhotoMetadataList
 
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
@@ -36,23 +42,16 @@ class PhotoSpotViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val fetchedPhotoSpots = photoSpotRepository.getPhotoSpotList()
+                val fetchedThumbnailPhotoMetadataList = photoMetadataRepository.getThumbnailPhotoMetadataList()
                 _photoSpots.value = fetchedPhotoSpots
+                _thumbnailPhotoMetadataList.value = fetchedThumbnailPhotoMetadataList
             } catch (e: Exception) {
                 _errorMessage.value = "Failed to load photo spots : ${e.message}"
                 _photoSpots.value = emptyList()
+                _thumbnailPhotoMetadataList.value = hashMapOf<String, PhotoMetadata>()
             } finally {
                 _isLoading.value = false
             }
         }
-    }
-
-    fun onPhotoSpotClicked(photoSpot: PhotoSpot) {
-        // TODO : 상세 페이지로 이동
-        println("Clicked on photo spot: ${photoSpot.name}")
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        println("PhotoSpotListViewModel cleared")
     }
 }
