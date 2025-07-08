@@ -69,8 +69,8 @@ class MainActivity : ComponentActivity() {
 
                             composable(Screen.PhotoSpotList.route) {
                                 PhotoSpotListView(
-                                    onPhotoSpotClick = { photoSpotId ->
-                                        navController.navigate(Screen.PhotoSpotDetail.createRoute(photoSpotId))
+                                    onPhotoClick = { photoId ->
+                                        navController.navigate(Screen.PhotoDetail.createRoute(photoId))
                                     }
                                 )
                             }
