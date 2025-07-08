@@ -51,6 +51,7 @@ import com.example.shutterup.model.PhotoSpot
 import com.example.shutterup.model.PhotoMetadata
 import com.example.shutterup.viewmodel.PhotoSpotListViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.shutterup.utils.FileManager
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -64,6 +65,7 @@ import com.mapbox.maps.plugin.gestures.gestures
 @Composable
 fun PhotoSpotListView(
     viewModel: PhotoSpotListViewModel = hiltViewModel(),
+    fileManager: FileManager,
     onPhotoClick: (String) -> Unit = {}
 ) {
     val photoSpots by viewModel.photoSpots.observeAsState(initial = emptyList<PhotoSpot>())
@@ -262,13 +264,15 @@ fun PhotoSpotListView(
                     onPhotoSpotClick = { photoSpot ->
                         selectedPhotoSpot = photoSpot
                         shouldApplyPadding = true // 포토스팟 클릭 시 패딩 적용
-                    }
+                    },
+                    fileManager = fileManager
                 )
             } else {
                 // 선택된 스팟의 사진 그리드 (상세 화면)
                 PhotoSpotDetailBottomSheet(
                     photoSpot = selectedPhotoSpot!!,
-                    onPhotoClick = onPhotoClick
+                    onPhotoClick = onPhotoClick,
+                    fileManager = fileManager
                 )
             }
         }
@@ -529,7 +533,8 @@ fun PhotoSpotBottomSheetContent(
     userLocation: Pair<Double, Double>?,
     searchQuery: String,
     onLocationUpdate: (Double, Double) -> Unit,
-    onPhotoSpotClick: (PhotoSpot) -> Unit
+    onPhotoSpotClick: (PhotoSpot) -> Unit,
+    fileManager: FileManager
 ) {
     Column(
         modifier = Modifier
@@ -615,7 +620,8 @@ fun PhotoSpotBottomSheetContent(
                             photoSpot = photoSpot,
                             thumbnailPhotoMetadata = thumbnail,
                             distance = distance,
-                            onClick = { onPhotoSpotClick(photoSpot) }
+                            onClick = { onPhotoSpotClick(photoSpot) },
+                            fileManager = fileManager
                         )
                         if (photoSpot != photoSpots.last()) {
                             HorizontalDivider(
@@ -634,7 +640,8 @@ fun PhotoSpotBottomSheetContent(
 @Composable
 fun PhotoSpotDetailBottomSheet(
     photoSpot: PhotoSpot,
-    onPhotoClick: (String) -> Unit
+    onPhotoClick: (String) -> Unit,
+    fileManager: FileManager
 ) {
     val viewModel: com.example.shutterup.viewmodel.PhotoSpotDetailViewModel = hiltViewModel()
     val photoMetadataList by viewModel.photoMetadataList.observeAsState(initial = emptyList())
@@ -692,7 +699,8 @@ fun PhotoSpotDetailBottomSheet(
                     items(photoMetadataList) { photoMetadata ->
                         PhotoGridItemBottomSheet(
                             photoMetadata = photoMetadata,
-                            onPhotoClick = onPhotoClick
+                            onPhotoClick = onPhotoClick,
+                            fileManager = fileManager
                         )
                     }
                 }
@@ -718,15 +726,12 @@ fun PhotoSpotDetailBottomSheet(
 @Composable
 fun PhotoGridItemBottomSheet(
     photoMetadata: PhotoMetadata,
-    onPhotoClick: (String) -> Unit
+    onPhotoClick: (String) -> Unit,
+    fileManager: FileManager
 ) {
     val context = LocalContext.current
-    val drawableResId = remember(photoMetadata.filename) {
-        context.resources.getIdentifier(
-            photoMetadata.filename,
-            "drawable",
-            context.packageName
-        )
+    val imageUri = remember(photoMetadata.filename) {
+        fileManager.getImageUri(photoMetadata.filename)
     }
 
     Box(
@@ -734,10 +739,11 @@ fun PhotoGridItemBottomSheet(
             .aspectRatio(1f)
             .clickable { onPhotoClick(photoMetadata.id) }
     ) {
-        if (drawableResId != 0) {
+        if (imageUri != null) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(drawableResId)
+                    .data(imageUri)
+                    .crossfade(true)
                     .build(),
                 contentDescription = photoMetadata.filename,
                 contentScale = ContentScale.Crop,
@@ -768,7 +774,8 @@ fun PhotoSpotBottomSheetItem(
     photoSpot: PhotoSpot,
     thumbnailPhotoMetadata: PhotoMetadata?,
     distance: Double?,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    fileManager: FileManager
 ) {
     val context = LocalContext.current
 
@@ -788,17 +795,14 @@ fun PhotoSpotBottomSheetItem(
             contentAlignment = Alignment.Center
         ) {
             if (thumbnailPhotoMetadata != null) {
-                val drawableResId = remember(thumbnailPhotoMetadata.filename) {
-                    context.resources.getIdentifier(
-                        thumbnailPhotoMetadata.filename,
-                        "drawable",
-                        context.packageName
-                    )
+                val imageUri = remember(thumbnailPhotoMetadata.filename) {
+                    fileManager.getImageUri(thumbnailPhotoMetadata.filename)
                 }
-                if (drawableResId != 0) {
+                if (imageUri != null) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
-                            .data(drawableResId)
+                            .data(imageUri)
+                            .crossfade(true)
                             .build(),
                         contentDescription = "포토스팟 썸네일",
                         contentScale = ContentScale.Crop,

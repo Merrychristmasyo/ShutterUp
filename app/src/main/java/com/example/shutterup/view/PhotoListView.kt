@@ -32,16 +32,18 @@ import com.example.shutterup.navigation.Screen
 import com.example.shutterup.viewmodel.PhotoListViewModel
 import com.example.shutterup.ui.theme.*
 import java.util.Collections
+import com.example.shutterup.utils.FileManager
+import com.example.shutterup.model.PhotoMetadata
 
 @Composable
 fun PhotoListView(
     viewModel: PhotoListViewModel = hiltViewModel(),
+    fileManager: FileManager,
     onPhotoClick: (String) -> Unit
 ) {
-    val photoMetadata by viewModel.photoMetadata.observeAsState(initial = emptyList())
-    val isLoading by viewModel.isLoading.observeAsState(initial = false)
-    val errorMessage by viewModel.errorMessage.observeAsState(initial = null)
-    val context = LocalContext.current
+    val photoMetadata by viewModel.photoMetadata.observeAsState(emptyList())
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val errorMessage by viewModel.errorMessage.observeAsState()
 
     Column(
         modifier = Modifier
@@ -62,7 +64,7 @@ fun PhotoListView(
             PhotoGridSection(
                 photoMetadata = photoMetadata,
                 onPhotoClick = onPhotoClick,
-                context = context
+                fileManager = fileManager
             )
         }
     }
@@ -186,7 +188,7 @@ private fun EmptySection() {
 private fun PhotoGridSection(
     photoMetadata: List<com.example.shutterup.model.PhotoMetadata>,
     onPhotoClick: (String) -> Unit,
-    context: android.content.Context
+    fileManager: FileManager
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
@@ -200,7 +202,7 @@ private fun PhotoGridSection(
             PhotoGridItem(
                 photo = photo,
                 onPhotoClick = onPhotoClick,
-                context = context
+                fileManager = fileManager
             )
         }
     }
@@ -210,14 +212,11 @@ private fun PhotoGridSection(
 private fun PhotoGridItem(
     photo: com.example.shutterup.model.PhotoMetadata,
     onPhotoClick: (String) -> Unit,
-    context: android.content.Context
+    fileManager: FileManager
 ) {
-    val drawableResId = remember(photo.filename) {
-        context.resources.getIdentifier(
-            photo.filename,
-            "drawable",
-            context.packageName
-        )
+    val context = LocalContext.current
+    val imageUri = remember(photo.filename) {
+        fileManager.getImageUri(photo.filename)
     }
     
     // 좋아요 상태 관리
@@ -228,11 +227,12 @@ private fun PhotoGridItem(
             .aspectRatio(1f)
             .clickable { onPhotoClick(photo.id) }
     ) {
-        if (drawableResId != 0) {
+        if (imageUri != null) {
             // 사진 표시
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(drawableResId)
+                    .data(imageUri)
+                    .crossfade(true)
                     .build(),
                 contentDescription = photo.filename,
                 contentScale = ContentScale.Crop,

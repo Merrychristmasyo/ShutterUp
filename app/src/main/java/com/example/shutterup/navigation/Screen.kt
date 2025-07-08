@@ -7,14 +7,18 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Collections
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.Collections
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(
@@ -33,8 +37,15 @@ sealed class Screen(
     object PhotoList : Screen(
         route = "photo_list", 
         title = "사진 갤러리", 
-        icon = Icons.Outlined.PhotoCamera,
-        selectedIcon = Icons.Filled.PhotoCamera
+        icon = Icons.Outlined.Collections,
+        selectedIcon = Icons.Filled.Collections
+    )
+
+    object PhotoUpload : Screen(
+        route = "upload",
+        title = "업로드",
+        icon = Icons.Outlined.Add,
+        selectedIcon = Icons.Filled.Add
     )
     
     // 검색
