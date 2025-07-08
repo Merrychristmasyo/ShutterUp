@@ -67,4 +67,19 @@ class PhotoMetadataRepository @Inject constructor(
         val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
         return photoMetadata.filter { it.photoSpotId == photoSpotId }
     }
+
+    suspend fun getThumbnailPhotoMetadataList(): HashMap<String, PhotoMetadata> {
+        val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
+        val thumbnailMap = hashMapOf<String, PhotoMetadata>()
+        
+        // 각 포토스팟의 첫 번째 사진을 찾아서 맵에 추가
+        photoMetadata.groupBy { it.photoSpotId }
+            .forEach { (spotId, photos) ->
+                photos.firstOrNull()?.let { firstPhoto ->
+                    thumbnailMap[spotId] = firstPhoto
+                }
+            }
+        
+        return thumbnailMap
+    }
 }
