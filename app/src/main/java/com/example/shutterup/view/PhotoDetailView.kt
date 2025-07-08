@@ -282,20 +282,48 @@ fun PhotoDetailTabSection(
 @Composable
 fun ShootingMethodTabContent(photoMetadata: PhotoMetadata?) {
     photoMetadata?.let { metadata ->
-        Text(
-            text = "촬영 방법: ${metadata.shootingMethod}",
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = metadata.description)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Tags: ${metadata.tags.joinToString(", ")}",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
-        )
-
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "촬영 방법",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Text(
+                text = metadata.shootingMethod,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = "설명",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            
+            Text(
+                text = metadata.description,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = "태그",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            
+            Text(
+                text = metadata.tags.joinToString(", "),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+        }
     } ?: Text("촬영 방법 정보 없음")
 }
 

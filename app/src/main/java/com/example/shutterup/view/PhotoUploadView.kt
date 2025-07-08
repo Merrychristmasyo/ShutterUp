@@ -223,7 +223,8 @@ fun PhotoUploadView(
                                 shutterSpeed = shutterSpeed,
                                 lensName = lensName,
                                 cameraName = cameraName,
-                                shootingMethod = shootingMethod
+                                shootingMethod = shootingMethod,
+                                userId = "user_001"
                             )
                             android.util.Log.d("PhotoUpload", "uploadData created: $uploadData")
                             viewModel.uploadPhoto(uploadData, selectedImageUri)
@@ -361,37 +362,6 @@ fun PhotoSelectionStep(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 선택된 이미지 상태 표시
-            selectedImageUri?.let { uri ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.CheckCircle,
-                            contentDescription = "선택 완료",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "사진이 선택되었습니다",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-            
             // 갤러리 그리드
             if (galleryImages.isEmpty()) {
                 Box(
@@ -694,6 +664,35 @@ fun LocationSelectionStep(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("새 위치 추가")
             }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onBack,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("이전")
+                }
+                
+                Button(
+                    onClick = onNext,
+                    enabled = selectedPhotoSpot != null || isCustomLocation,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        if (selectedPhotoSpot == null && !isCustomLocation) "위치를 선택해주세요"
+                        else "다음"
+                    )
+                    if (selectedPhotoSpot != null || isCustomLocation) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                    }
+                }
+            }
         } else {
             // 새 위치 입력 폼 (지도 기반)
             Column(
@@ -844,35 +843,6 @@ fun LocationSelectionStep(
                     ) {
                         Text("확인")
                     }
-                }
-            }
-        }
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("이전")
-            }
-            
-            Button(
-                onClick = onNext,
-                enabled = selectedPhotoSpot != null || isCustomLocation,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    if (selectedPhotoSpot == null && !isCustomLocation) "위치를 선택해주세요"
-                    else "다음"
-                )
-                if (selectedPhotoSpot != null || isCustomLocation) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                 }
             }
         }
@@ -1198,16 +1168,15 @@ fun LocationPickerMapView(
                             // 기존 사용자 선택 마커 제거
                             userSelectedAnnotationManager?.deleteAll()
                             
-                            // 새 사용자 선택 마커 추가 (빨간색으로 구분)
-                            val displayName = if (selectedLocationName.isNotBlank()) selectedLocationName else "새 위치"
+                            // 새 사용자 선택 마커 추가 (기본 마커 사용)
                             val pointAnnotationOptions = PointAnnotationOptions()
                                 .withPoint(point)
-                                .withTextField(displayName)
-                                .withTextSize(14.0)
+                                .withTextField("새 위치")
+                                .withTextSize(12.0)
                                 .withTextColor(android.graphics.Color.RED)
                                 .withTextHaloColor(android.graphics.Color.WHITE)
                                 .withTextHaloWidth(2.0)
-                                .withTextOffset(listOf(0.0, -2.0)) // 텍스트를 핀 위쪽에 위치
+                                .withTextOffset(listOf(0.0, -2.0))
                             
                             userSelectedAnnotationManager?.create(pointAnnotationOptions)
                             
@@ -1229,7 +1198,7 @@ fun LocationPickerMapView(
         },
         modifier = modifier,
         update = { mapView ->
-            // 선택된 위치의 이름이 변경되면 마커 업데이트
+            // 선택된 위치 업데이트
             try {
                 selectedLocation?.let { (lat, lng) ->
                     userSelectedAnnotationManager?.deleteAll()
@@ -1239,7 +1208,7 @@ fun LocationPickerMapView(
                     val pointAnnotationOptions = PointAnnotationOptions()
                         .withPoint(point)
                         .withTextField(displayName)
-                        .withTextSize(14.0)
+                        .withTextSize(12.0)
                         .withTextColor(android.graphics.Color.RED)
                         .withTextHaloColor(android.graphics.Color.WHITE)
                         .withTextHaloWidth(2.0)
