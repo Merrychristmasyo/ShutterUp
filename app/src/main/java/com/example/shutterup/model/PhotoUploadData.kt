@@ -3,19 +3,19 @@ package com.example.shutterup.model
 import java.util.UUID
 
 data class PhotoUploadData(
-    val spotName: String,
-    val latitude: Double,
-    val longitude: Double,
-    val description: String,
-    val tags: List<String>,
-    val fNumber: String,
-    val focalLength: String,
-    val iso: String,
-    val shutterSpeed: String,
-    val lensName: String,
-    val cameraName: String,
-    val shootingMethod: String,
-    val userId: String = "user_001" // 기본 사용자 ID, 추후 실제 사용자 시스템과 연동
+    val spotName: String, //포토스팟 이름 (필수)
+    val latitude: Double, //위도 (필수)
+    val longitude: Double, //경도 (필수)
+    val userId: String = "user_001", //사용자 ID (필수, 기본값)
+    val description: String? = null, //설명 (선택)
+    val tags: List<String>? = null, //태그 (선택)
+    val fNumber: String? = null, //F값 (선택)
+    val focalLength: String? = null, //초점거리 (선택)
+    val iso: String? = null, //ISO (선택)
+    val shutterSpeed: String? = null, //셔터속도 (선택)
+    val lensName: String? = null, //렌즈명 (선택)
+    val cameraName: String? = null, //카메라명 (선택)
+    val shootingMethod: String? = null //촬영방법 (선택)
 ) {
     /**
      * 파일명을 자동 생성합니다 (userId + randomString)
@@ -49,17 +49,23 @@ data class PhotoUploadData(
             errors.add("경도는 -180도에서 180도 사이여야 합니다")
         }
 
-        // 카메라 설정값 검사
-        if (fNumber.isNotBlank() && !isValidFNumber(fNumber)) {
-            errors.add("조리개 값(F-number)이 올바르지 않습니다")
+        // 선택적 카메라 설정값 검사 (값이 있을 때만)
+        fNumber?.let { value ->
+            if (value.isNotBlank() && !isValidFNumber(value)) {
+                errors.add("조리개 값(F-number)이 올바르지 않습니다")
+            }
         }
         
-        if (iso.isNotBlank() && !isValidISO(iso)) {
-            errors.add("ISO 값이 올바르지 않습니다")
+        iso?.let { value ->
+            if (value.isNotBlank() && !isValidISO(value)) {
+                errors.add("ISO 값이 올바르지 않습니다")
+            }
         }
 
-        if (shutterSpeed.isNotBlank() && !isValidShutterSpeed(shutterSpeed)) {
-            errors.add("셔터 속도 값이 올바르지 않습니다")
+        shutterSpeed?.let { value ->
+            if (value.isNotBlank() && !isValidShutterSpeed(value)) {
+                errors.add("셔터 속도 값이 올바르지 않습니다")
+            }
         }
 
         return if (errors.isEmpty()) {

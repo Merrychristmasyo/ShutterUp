@@ -215,16 +215,16 @@ fun PhotoUploadView(
                                 spotName = finalSpotName,
                                 latitude = lat,
                                 longitude = lng,
-                                description = description,
-                                tags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() },
-                                fNumber = fNumber,
-                                focalLength = focalLength,
-                                iso = iso,
-                                shutterSpeed = shutterSpeed,
-                                lensName = lensName,
-                                cameraName = cameraName,
-                                shootingMethod = shootingMethod,
-                                userId = "user_001"
+                                userId = "user_001",
+                                description = if (description.isNotBlank()) description else null,
+                                tags = if (tags.isNotBlank()) tags.split(",").map { it.trim() }.filter { it.isNotEmpty() } else null,
+                                fNumber = if (fNumber.isNotBlank()) fNumber else null,
+                                focalLength = if (focalLength.isNotBlank()) focalLength else null,
+                                iso = if (iso.isNotBlank()) iso else null,
+                                shutterSpeed = if (shutterSpeed.isNotBlank()) shutterSpeed else null,
+                                lensName = if (lensName.isNotBlank()) lensName else null,
+                                cameraName = if (cameraName.isNotBlank()) cameraName else null,
+                                shootingMethod = if (shootingMethod.isNotBlank()) shootingMethod else null
                             )
                             android.util.Log.d("PhotoUpload", "uploadData created: $uploadData")
                             viewModel.uploadPhoto(uploadData, selectedImageUri)
@@ -912,9 +912,10 @@ fun MetadataInputStep(
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
-                label = { Text("설명") },
+                label = { Text("설명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
-                minLines = 3
+                minLines = 3,
+                placeholder = { Text("사진에 대한 설명을 자유롭게 작성하세요") }
             )
         }
         
@@ -922,15 +923,22 @@ fun MetadataInputStep(
             OutlinedTextField(
                 value = tags,
                 onValueChange = onTagsChange,
-                label = { Text("태그 (쉼표로 구분)") },
+                label = { Text("태그 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("예: 일몰, 한강, 자연") }
+                placeholder = { Text("예: 일몰, 한강, 자연") },
+                supportingText = {
+                    Text(
+                        text = "쉼표로 구분해서 입력하세요",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             )
         }
         
         item {
             Text(
-                text = "카메라 설정",
+                text = "카메라 설정 (선택)",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -943,7 +951,7 @@ fun MetadataInputStep(
                 OutlinedTextField(
                     value = fNumber,
                     onValueChange = onFNumberChange,
-                    label = { Text("F값") },
+                    label = { Text("F값 (선택)") },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("f/2.8") }
                 )
@@ -951,7 +959,7 @@ fun MetadataInputStep(
                 OutlinedTextField(
                     value = focalLength,
                     onValueChange = onFocalLengthChange,
-                    label = { Text("초점거리") },
+                    label = { Text("초점거리 (선택)") },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("50mm") }
                 )
@@ -965,7 +973,7 @@ fun MetadataInputStep(
                 OutlinedTextField(
                     value = iso,
                     onValueChange = onIsoChange,
-                    label = { Text("ISO") },
+                    label = { Text("ISO (선택)") },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("200") }
                 )
@@ -973,7 +981,7 @@ fun MetadataInputStep(
                 OutlinedTextField(
                     value = shutterSpeed,
                     onValueChange = onShutterSpeedChange,
-                    label = { Text("셔터속도") },
+                    label = { Text("셔터속도 (선택)") },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("1/250s") }
                 )
@@ -984,7 +992,7 @@ fun MetadataInputStep(
             OutlinedTextField(
                 value = lensName,
                 onValueChange = onLensNameChange,
-                label = { Text("렌즈명") },
+                label = { Text("렌즈명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Canon EF 50mm f/1.8") }
             )
@@ -994,7 +1002,7 @@ fun MetadataInputStep(
             OutlinedTextField(
                 value = cameraName,
                 onValueChange = onCameraNameChange,
-                label = { Text("카메라명") },
+                label = { Text("카메라명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Canon EOS R5") }
             )
@@ -1016,7 +1024,7 @@ fun MetadataInputStep(
                 
                 Button(
                     onClick = onNext,
-                    enabled = description.isNotBlank(),
+                    enabled = true, // description은 이제 선택사항이므로 항상 활성화
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("다음")
@@ -1052,10 +1060,34 @@ fun DetailInputStep(
         OutlinedTextField(
             value = shootingMethod,
             onValueChange = onShootingMethodChange,
-            label = { Text("촬영 방법") },
+            label = { Text("촬영 방법 (선택)") },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("예: 수동, 자동, 야간모드") }
+            placeholder = { Text("예: 수동, 자동, 야간모드\n삼각대 사용, 플래시 사용 등") },
+            minLines = 3,
+            maxLines = 5
         )
+        
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "업로드 시각",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "업로드 시점에 자동으로 기록됩니다",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         
         errorMessage?.let { message ->
             Card(
@@ -1090,7 +1122,7 @@ fun DetailInputStep(
             
             Button(
                 onClick = onUpload,
-                enabled = !isUploading && shootingMethod.isNotBlank(),
+                enabled = !isUploading, // 모든 필드가 선택사항이므로 항상 활성화
                 modifier = Modifier.weight(1f)
             ) {
                 if (isUploading) {

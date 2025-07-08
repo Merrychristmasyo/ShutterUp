@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shutterup.viewmodel.ProfileDetailViewModel
+import com.example.shutterup.utils.FileManager
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,6 +36,7 @@ fun ProfileDetailView(
     viewModel: ProfileDetailViewModel = hiltViewModel()
 ) {
     val profile by viewModel.profile.observeAsState(initial = null)
+    val userPhotos by viewModel.userPhotos.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
     val errorMessage by viewModel.errorMessage.observeAsState(initial = null)
 
@@ -64,6 +66,7 @@ fun ProfileDetailView(
         ProfileDetailScreenContent(
             paddingValues = paddingValues,
             profile = profile,
+            userPhotos = userPhotos,
             isLoading = isLoading,
             errorMessage = errorMessage
         )
@@ -74,6 +77,7 @@ fun ProfileDetailView(
 fun ProfileDetailScreenContent(
     paddingValues: PaddingValues,
     profile: com.example.shutterup.model.Profile?,
+    userPhotos: List<com.example.shutterup.model.PhotoMetadata>,
     isLoading: Boolean,
     errorMessage: String?
 ) {
@@ -90,7 +94,7 @@ fun ProfileDetailScreenContent(
                 ErrorSection(errorMessage = errorMessage)
             }
             profile != null -> {
-                ProfileContentSection(profile = profile)
+                ProfileContentSection(profile = profile, userPhotos = userPhotos)
             }
             else -> {
                 EmptyProfileSection()
@@ -162,7 +166,7 @@ private fun EmptyProfileSection() {
 }
 
 @Composable
-private fun ProfileContentSection(profile: com.example.shutterup.model.Profile) {
+private fun ProfileContentSection(profile: com.example.shutterup.model.Profile, userPhotos: List<com.example.shutterup.model.PhotoMetadata>) {
     val context = LocalContext.current
     
     Column(
@@ -183,13 +187,13 @@ private fun ProfileContentSection(profile: com.example.shutterup.model.Profile) 
             Spacer(modifier = Modifier.height(24.dp))
             
             // 프로필 정보
-            ProfileInfoSection(profile = profile)
+            ProfileInfoSection(profile = profile, photoCount = userPhotos.size)
         }
         
         Spacer(modifier = Modifier.height(32.dp))
         
         // 사진 그리드 또는 빈 상태
-        PhotoGridSection()
+        PhotoGridSection(userPhotos = userPhotos)
     }
 }
 
@@ -219,7 +223,7 @@ private fun ProfileImageSection(profile: com.example.shutterup.model.Profile) {
 }
 
 @Composable
-private fun ProfileInfoSection(profile: com.example.shutterup.model.Profile) {
+private fun ProfileInfoSection(profile: com.example.shutterup.model.Profile, photoCount: Int) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -251,6 +255,20 @@ private fun ProfileInfoSection(profile: com.example.shutterup.model.Profile) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.width(16.dp))
+            Icon(
+                imageVector = Icons.Default.Photo,
+                contentDescription = "Photos",
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "${photoCount}장",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
         }
         
         Text(
@@ -266,11 +284,18 @@ private fun ProfileInfoSection(profile: com.example.shutterup.model.Profile) {
 }
 
 @Composable
-private fun PhotoGridSection() {
-    // 현재는 빈 사진 리스트 (나중에 실제 사진 데이터로 교체)
-    val photos = emptyList<Any>() // 실제로는 PhotoMetadata 리스트
+private fun PhotoGridSection(userPhotos: List<com.example.shutterup.model.PhotoMetadata>) {
+    val context = LocalContext.current
+    val fileManager = remember { FileManager(context) }
     
-    if (photos.isEmpty()) {
+    // 디버깅을 위한 로그
+    android.util.Log.d("ProfileDetailView", "PhotoGridSection - userPhotos count: ${userPhotos.size}")
+    userPhotos.forEachIndexed { index, photo ->
+        android.util.Log.d("ProfileDetailView", "Photo $index: ${photo.filename}, userId: ${photo.userId}")
+        android.util.Log.d("ProfileDetailView", "Image file exists: ${fileManager.fileExists(photo.filename)}")
+    }
+    
+    if (userPhotos.isEmpty()) {
         // 빈 상태 - 화면 중앙에 표시
         Box(
             modifier = Modifier
@@ -306,7 +331,7 @@ private fun PhotoGridSection() {
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            items(photos) { photo ->
+            items(userPhotos) { photo ->
                 // 실제 사진 아이템 표시
                 Card(
                     modifier = Modifier.aspectRatio(1f),
@@ -314,17 +339,38 @@ private fun PhotoGridSection() {
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 ) {
-                    // 실제 사진 로딩 로직
+                    // 실제 사진 로딩 로직 (썸네일 우선)
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        // 임시 플레이스홀더
-                        Icon(
-                            imageVector = Icons.Default.Photo,
-                            contentDescription = "Photo",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        // 썸네일 우선, 없으면 원본 이미지 사용
+                        val thumbnailUri = fileManager.getThumbnailUri(photo.filename)
+                        val imageUri = thumbnailUri ?: fileManager.getImageUri(photo.filename)
+                        
+                        if (imageUri != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(imageUri)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = "사진",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                onError = {
+                                    // 에러 발생 시 로그 출력
+                                    android.util.Log.e("ProfileDetailView", "Failed to load image: ${photo.filename}")
+                                }
+                            )
+                        } else {
+                            // 파일이 없는 경우 기본 아이콘 표시
+                            Icon(
+                                imageVector = Icons.Default.Photo,
+                                contentDescription = "사진 없음",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
                     }
                 }
             }

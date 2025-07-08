@@ -38,14 +38,43 @@ class PhotoMetadataRepository @Inject constructor(
     private suspend fun loadPhotoMetadataFromFile(): List<PhotoMetadata> {
         return withContext(Dispatchers.IO) {
             try {
-                val jsonString = fileManager.loadJsonData(jsonFileName)
-                if (jsonString != null) {
-                    json.decodeFromString<List<PhotoMetadata>>(jsonString)
+                // 1. 먼저 internal storage에서 실제 업로드된 데이터 로드
+                val internalJsonString = fileManager.loadJsonData(jsonFileName)
+                val internalData = if (internalJsonString != null) {
+                    try {
+                        json.decodeFromString<List<PhotoMetadata>>(internalJsonString)
+                    } catch (e: Exception) {
+                        android.util.Log.w("PhotoMetadataRepository", "Error parsing internal data: ${e.message}")
+                        emptyList()
+                    }
                 } else {
                     emptyList()
                 }
+
+                // 2. Assets에서 초기 더미 데이터 로드 (internal storage에 데이터가 없을 때만)
+                val assetsData = if (internalData.isEmpty()) {
+                    try {
+                        val assetsJsonString = context.assets.open(jsonFileName).bufferedReader().use { it.readText() }
+                        json.decodeFromString<List<PhotoMetadata>>(assetsJsonString)
+                    } catch (e: Exception) {
+                        android.util.Log.w("PhotoMetadataRepository", "Error loading assets data: ${e.message}")
+                        emptyList()
+                    }
+                } else {
+                    emptyList()
+                }
+
+                // 3. 실제 데이터 우선, 없으면 더미 데이터 사용
+                val finalData = if (internalData.isNotEmpty()) internalData else assetsData
+                
+                android.util.Log.d("PhotoMetadataRepository", "Loaded ${finalData.size} photo metadata entries")
+                finalData.forEach { metadata ->
+                    android.util.Log.d("PhotoMetadataRepository", "Photo: ${metadata.filename}, userId: ${metadata.userId}")
+                }
+                
+                finalData
             } catch (e: Exception) {
-                android.util.Log.e("PhotoMetadataRepository", "Error parsing $jsonFileName: ${e.message}", e)
+                android.util.Log.e("PhotoMetadataRepository", "Error loading photo metadata: ${e.message}", e)
                 emptyList()
             }
         }
@@ -61,17 +90,23 @@ class PhotoMetadataRepository @Inject constructor(
         return photoMetadata
     }
 
-    suspend fun getPhotoMetadataListByPhotoSpotId(photoSpotId: String): List<PhotoMetadata> {
+    suspend fun getPhotoMetadataListByPhotoSpotId(photoSpotId: String?): List<PhotoMetadata> {
         val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
         return photoMetadata.filter { it.photoSpotId == photoSpotId }
+    }
+
+    suspend fun getPhotoMetadataListByUserId(userId: String): List<PhotoMetadata> {
+        val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
+        return photoMetadata.filter { it.userId == userId }
     }
 
     suspend fun getThumbnailPhotoMetadataList(): HashMap<String, PhotoMetadata> {
         val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
         val thumbnailMap = hashMapOf<String, PhotoMetadata>()
         
-        // 각 포토스팟의 첫 번째 사진을 찾아서 맵에 추가
-        photoMetadata.groupBy { it.photoSpotId }
+        // 각 포토스팟의 첫 번째 사진을 찾아서 맵에 추가 (photoSpotId가 null이 아닌 경우만)
+        photoMetadata.filter { it.photoSpotId != null }
+            .groupBy { it.photoSpotId!! } // null이 아님을 확인했으므로 !! 사용
             .forEach { (spotId, photos) ->
                 photos.firstOrNull()?.let { firstPhoto ->
                     thumbnailMap[spotId] = firstPhoto

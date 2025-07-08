@@ -293,7 +293,7 @@ fun ShootingMethodTabContent(photoMetadata: PhotoMetadata?) {
             )
             
             Text(
-                text = metadata.shootingMethod,
+                text = metadata.shootingMethod ?: "정보 없음",
                 style = MaterialTheme.typography.bodyLarge
             )
             
@@ -306,7 +306,7 @@ fun ShootingMethodTabContent(photoMetadata: PhotoMetadata?) {
             )
             
             Text(
-                text = metadata.description,
+                text = metadata.description ?: "설명 없음",
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -319,7 +319,7 @@ fun ShootingMethodTabContent(photoMetadata: PhotoMetadata?) {
             )
             
             Text(
-                text = metadata.tags.joinToString(", "),
+                text = metadata.tags?.joinToString(", ") ?: "태그 없음",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -336,16 +336,16 @@ fun ShootingTimeTabContent(photoMetadata: PhotoMetadata?, photoDetail: PhotoDeta
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text("F값: ${metadata.fNumber}")
-        Text("초점거리: ${metadata.focalLength}")
-        Text("ISO: ${metadata.iso}")
-        Text("셔터속도: ${metadata.shutterSpeed}")
-        Text("렌즈: ${metadata.lensName}")
-        Text("카메라: ${metadata.cameraName}")
+        Text("F값: ${metadata.fNumber ?: "정보 없음"}")
+        Text("초점거리: ${metadata.focalLength ?: "정보 없음"}")
+        Text("ISO: ${metadata.iso ?: "정보 없음"}")
+        Text("셔터속도: ${metadata.shutterSpeed ?: "정보 없음"}")
+        Text("렌즈: ${metadata.lensName ?: "정보 없음"}")
+        Text("카메라: ${metadata.cameraName ?: "정보 없음"}")
         photoDetail?.let { detail ->
-            Text("촬영일시: ${detail.timestamp}")
+            Text("업로드 시각: ${detail.timestamp ?: "정보 없음"}")
         }
-    } ?: Text("촬영 시간 정보 없음")
+    } ?: Text("업로드 시간 정보 없음")
 }
 
 @Composable

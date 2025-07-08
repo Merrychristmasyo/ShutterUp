@@ -152,7 +152,7 @@ class PhotoUploadViewModel @Inject constructor(
         val photoDetail = PhotoDetail(
             id = photoId,
             method = uploadData.shootingMethod,
-            timestamp = timestamp
+            timestamp = timestamp // 업로드 시점의 현재 시간 사용
         )
 
         val photoMetadata = PhotoMetadata(

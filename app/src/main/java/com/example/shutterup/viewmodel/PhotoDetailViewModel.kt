@@ -53,7 +53,9 @@ class PhotoDetailViewModel @Inject constructor(
                 val fetchedPhotoMetadata = photoMetadataRepository.getPhotoMetadataById(photoId)
                 val fetchedPhotoReviews = photoReviewRepository.getPhotoReviewsById(photoId)
                 if (fetchedPhotoMetadata != null) {
-                    val fetchedPhotoSpot = photoSpotRepository.getPhotoSpotById(fetchedPhotoMetadata.photoSpotId)
+                    val fetchedPhotoSpot = fetchedPhotoMetadata.photoSpotId?.let { spotId ->
+                        photoSpotRepository.getPhotoSpotById(spotId)
+                    }
                     _photoSpot.value = fetchedPhotoSpot
                     println("data : $fetchedPhotoDetail, $fetchedPhotoMetadata, $fetchedPhotoSpot, $fetchedPhotoReviews")
 
