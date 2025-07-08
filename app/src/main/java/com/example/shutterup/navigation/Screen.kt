@@ -7,12 +7,14 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(
@@ -21,20 +23,18 @@ sealed class Screen(
     val icon: ImageVector,
     val selectedIcon: ImageVector? = null
 ) {
-    // 메인 피드 - 인스타그램 스타일
-    object PhotoList : Screen(
-        route = "photo_list", 
-        title = "홈", 
-        icon = Icons.Outlined.Home,
-        selectedIcon = Icons.Filled.Home
-    )
-    
-    // 탐색 - 핀터레스트 스타일
     object PhotoSpotList : Screen(
         route = "photo_spot_list", 
         title = "탐색", 
         icon = Icons.Outlined.Explore,
         selectedIcon = Icons.Filled.Explore
+    )
+
+    object PhotoList : Screen(
+        route = "photo_list", 
+        title = "사진 갤러리", 
+        icon = Icons.Outlined.PhotoCamera,
+        selectedIcon = Icons.Filled.PhotoCamera
     )
     
     // 검색

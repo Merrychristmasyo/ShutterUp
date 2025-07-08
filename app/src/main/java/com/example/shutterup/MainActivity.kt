@@ -5,9 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import dagger.hilt.android.AndroidEntryPoint
 
 import com.example.shutterup.ui.theme.ShutterUpTheme
@@ -58,19 +60,18 @@ class MainActivity : ComponentActivity() {
                     ) { innerPadding ->
                         NavHost(
                             navController = navController,
-                            startDestination = Screen.PhotoList.route,
+                            startDestination = Screen.PhotoSpotList.route,
                             modifier = Modifier.padding(innerPadding)
                         ) {
-                            composable(Screen.PhotoList.route) {
-                                PhotoListView(
-                                    onPhotoClick = { photoId ->
-                                        navController.navigate(Screen.PhotoDetail.createRoute(photoId))
-                                    }
-                                )
-                            }
-
                             composable(Screen.PhotoSpotList.route) {
                                 PhotoSpotListView(
+                                        onPhotoClick = { photoId ->
+                                            navController.navigate(Screen.PhotoDetail.createRoute(photoId))
+                                        }
+                                )
+                            }
+                            composable(Screen.PhotoList.route) {
+                                PhotoListView(
                                     onPhotoClick = { photoId ->
                                         navController.navigate(Screen.PhotoDetail.createRoute(photoId))
                                     }
@@ -144,7 +145,6 @@ class MainActivity : ComponentActivity() {
                                 arguments = listOf(navArgument("userId") { type = NavType.StringType })
                             ) { backStack ->
                                 val userId = backStack.arguments?.getString("userId")!!
-                                println("userid: $userId")
                                 ProfileDetailView(
                                     userId = userId,
                                     onBack = { navController.popBackStack() },
@@ -163,8 +163,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun BottomNavigationBar(navController: NavController) {
     val screens = listOf(
-        Screen.PhotoList,
         Screen.PhotoSpotList,
+        Screen.PhotoList,
         Screen.ProfileList
     )
 
@@ -179,7 +179,13 @@ fun BottomNavigationBar(navController: NavController) {
                     (screen == Screen.PhotoList && currentRoute?.startsWith(Screen.PhotoDetail.route.split("/").first()) == true)
 
             NavigationBarItem(
-                icon = { Icon(imageVector = screen.icon, contentDescription = screen.title) },
+                icon = { 
+                    Icon(
+                        imageVector = screen.icon, 
+                        contentDescription = screen.title,
+                        modifier = Modifier.size(28.dp)
+                    ) 
+                },
                 // label = { Text(screen.title) },
                 selected = isSelected,
                 onClick = {
