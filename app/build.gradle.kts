@@ -122,4 +122,7 @@ dependencies {
     implementation(libs.mapbox.android)
     implementation(libs.mapbox.compose)
 
+    // Google Play Services Location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
 }
