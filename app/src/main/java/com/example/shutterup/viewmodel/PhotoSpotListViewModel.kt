@@ -130,4 +130,19 @@ class PhotoSpotListViewModel @Inject constructor(
         
         return earthRadius * c
     }
+    
+    // 새로운 포토 스팟 추가 함수
+    fun addNewPhotoSpot(photoSpot: PhotoSpot) {
+        viewModelScope.launch {
+            try {
+                val success = photoSpotRepository.addPhotoSpot(photoSpot)
+                if (success) {
+                    // 리스트 다시 로드
+                    loadPhotoSpots()
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "포토 스팟 추가 실패: ${e.message}"
+            }
+        }
+    }
 }

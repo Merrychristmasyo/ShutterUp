@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,6 +35,7 @@ import com.example.shutterup.model.PhotoMetadata
 import com.example.shutterup.model.PhotoReview
 import com.example.shutterup.model.PhotoSpot
 import com.example.shutterup.viewmodel.PhotoDetailViewModel
+import com.example.shutterup.utils.FileManager
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -49,7 +51,8 @@ import com.mapbox.maps.plugin.gestures.gestures
 fun PhotoDetailView(
     photoId: String,
     navController: NavController,
-    viewModel: PhotoDetailViewModel = hiltViewModel()
+    viewModel: PhotoDetailViewModel = hiltViewModel(),
+    fileManager: FileManager
 ) {
     val photoDetail by viewModel.photoDetail.observeAsState(initial = null)
     val photoSpot by viewModel.photoSpot.observeAsState(initial = null)
@@ -88,7 +91,8 @@ fun PhotoDetailView(
             photoReviews = photoReviews,
             photoMetadata = photoMetadata,
             isLoading = isLoading,
-            errorMessage = errorMessage
+            errorMessage = errorMessage,
+            fileManager = fileManager
         )
     }
 }
@@ -102,7 +106,8 @@ fun PhotoDetailScreenContent(
     photoReviews: List<PhotoReview>,
     photoMetadata: PhotoMetadata?,
     isLoading: Boolean,
-    errorMessage: String?
+    errorMessage: String?,
+    fileManager: FileManager
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("촬영 방법", "촬영 시간", "Reviews")
@@ -137,7 +142,7 @@ fun PhotoDetailScreenContent(
                 ) {
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
-                        PhotoDetailImageSection(photoMetadata = photoMetadata)
+                        PhotoDetailImageSection(photoMetadata = photoMetadata, fileManager = fileManager)
                         Spacer(modifier = Modifier.height(24.dp))
                         PhotoDetailSpotInfoSection(photoSpot = photoSpot)
                         Spacer(modifier = Modifier.height(16.dp))
@@ -160,29 +165,44 @@ fun PhotoDetailScreenContent(
 }
 
 @Composable
-fun PhotoDetailImageSection(photoMetadata: PhotoMetadata?) {
-    val photoUrl = photoMetadata?.filename?: ""
+fun PhotoDetailImageSection(photoMetadata: PhotoMetadata?, fileManager: FileManager) {
     val context = LocalContext.current
-    val drawableResId = remember(photoUrl) {
-        context.resources.getIdentifier(
-            photoUrl,
-            "drawable",
-            context.packageName
-        )
+    val imageUri = remember(photoMetadata?.filename) {
+        photoMetadata?.filename?.let { filename ->
+            fileManager.getImageUri(filename)
+        }
     }
 
-    if (photoUrl.isNotEmpty()) {
+    if (imageUri != null) {
         AsyncImage(
             model = ImageRequest.Builder(context)
-                .data(drawableResId)
+                .data(imageUri)
+                .crossfade(true)
                 .build(),
-            contentDescription = photoUrl,
+            contentDescription = photoMetadata?.filename ?: "Photo",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .height(300.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
         )
+    } else {
+        // 이미지가 없을 때 플레이스홀더
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "이미지를 불러올 수 없습니다",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 

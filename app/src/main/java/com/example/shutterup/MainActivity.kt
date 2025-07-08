@@ -19,6 +19,8 @@ import com.example.shutterup.view.PhotoDetailView
 import com.example.shutterup.view.ProfileListView
 import com.example.shutterup.view.PhotoSpotDetailView
 import com.example.shutterup.view.ProfileDetailView
+import com.example.shutterup.view.PhotoUploadView
+import com.example.shutterup.utils.FileManager
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -37,10 +39,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.shutterup.navigation.Screen
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var fileManager: FileManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +71,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             composable(Screen.PhotoSpotList.route) {
                                 PhotoSpotListView(
+                                        fileManager = fileManager,
                                         onPhotoClick = { photoId ->
                                             navController.navigate(Screen.PhotoDetail.createRoute(photoId))
                                         }
@@ -72,6 +79,7 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(Screen.PhotoList.route) {
                                 PhotoListView(
+                                    fileManager = fileManager,
                                     onPhotoClick = { photoId ->
                                         navController.navigate(Screen.PhotoDetail.createRoute(photoId))
                                     }
@@ -84,6 +92,15 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             }
+                            composable(Screen.PhotoUpload.route) {
+                                PhotoUploadView(
+                                    onUploadComplete = {
+                                        navController.navigate(Screen.PhotoSpotList.route) {
+                                            popUpTo(Screen.PhotoSpotList.route) { inclusive = true }
+                                        }
+                                    }
+                                )
+                            }
                             composable(
                                 route = Screen.PhotoDetail.route,
                                 arguments = listOf(navArgument("photoId") { type = NavType.StringType })
@@ -92,7 +109,8 @@ class MainActivity : ComponentActivity() {
                                 if (photoId != null) {
                                     PhotoDetailView(
                                         photoId = photoId,
-                                        navController
+                                        navController = navController,
+                                        fileManager = fileManager
                                     )
                                 } else {
                                     Text("오류: 사진 ID를 찾을 수 없습니다.")
@@ -108,26 +126,7 @@ class MainActivity : ComponentActivity() {
                                 if (photoSpotId != null) {
                                     PhotoSpotDetailView(
                                         photoSpotId = photoSpotId,
-                                        onPhotoClick = { photoId ->
-                                            navController.navigate(Screen.PhotoDetail.createRoute(photoId))
-                                        },
-                                        onBackClick = {
-                                            navController.navigate(Screen.PhotoSpotList.route)
-                                        }
-                                    )
-                                } else {
-                                    Text("오류: 포토 스팟 ID를 찾을 수 없습니다.")
-                                }
-                            }
-
-                            composable(
-                                route = Screen.PhotoSpotDetail.route,
-                                arguments = listOf(navArgument("photoSpotId") { type = NavType.StringType })
-                            ) { backStackEntry ->
-                                val photoSpotId = backStackEntry.arguments?.getString("photoSpotId")
-                                if (photoSpotId != null) {
-                                    PhotoSpotDetailView(
-                                        photoSpotId = photoSpotId,
+                                        fileManager = fileManager,
                                         onPhotoClick = { photoId ->
                                             navController.navigate(Screen.PhotoDetail.createRoute(photoId))
                                         },
@@ -165,6 +164,7 @@ fun BottomNavigationBar(navController: NavController) {
     val screens = listOf(
         Screen.PhotoSpotList,
         Screen.PhotoList,
+        Screen.PhotoUpload,
         Screen.ProfileList
     )
 

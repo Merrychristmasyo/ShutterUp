@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shutterup.viewmodel.PhotoSpotDetailViewModel
+import com.example.shutterup.utils.FileManager
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -46,6 +47,7 @@ import com.mapbox.maps.plugin.gestures.gestures
 fun PhotoSpotDetailView(
     photoSpotId: String,
     viewModel: PhotoSpotDetailViewModel = hiltViewModel(),
+    fileManager: FileManager,
     onPhotoClick: (String) -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
@@ -108,7 +110,8 @@ fun PhotoSpotDetailView(
                 PhotoSpotDetailContent(
                     photoSpot = photoSpot!!,
                     photoMetadataList = photoMetadataList,
-                    onPhotoClick = onPhotoClick
+                    onPhotoClick = onPhotoClick,
+                    fileManager = fileManager
                 )
             }
             else -> {
@@ -127,7 +130,8 @@ fun PhotoSpotDetailView(
 fun PhotoSpotDetailContent(
     photoSpot: com.example.shutterup.model.PhotoSpot,
     photoMetadataList: List<com.example.shutterup.model.PhotoMetadata>,
-    onPhotoClick: (String) -> Unit
+    onPhotoClick: (String) -> Unit,
+    fileManager: FileManager
 ) {
     val context = LocalContext.current
     
@@ -157,18 +161,15 @@ fun PhotoSpotDetailContent(
         ) {
             if (photoMetadataList.isNotEmpty()) {
                 val firstPhoto = photoMetadataList.first()
-                val drawableResId = remember(firstPhoto.filename) {
-                    context.resources.getIdentifier(
-                        firstPhoto.filename,
-                        "drawable",
-                        context.packageName
-                    )
+                val imageUri = remember(firstPhoto.filename) {
+                    fileManager.getImageUri(firstPhoto.filename)
                 }
 
-                if (drawableResId != 0) {
+                if (imageUri != null) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
-                            .data(drawableResId)
+                            .data(imageUri)
+                            .crossfade(true)
                             .build(),
                         contentDescription = "대표 이미지",
                         contentScale = ContentScale.Crop,
@@ -256,12 +257,8 @@ fun PhotoSpotDetailContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(photoMetadataList) { photoMetadata ->
-                    val drawableResId = remember(photoMetadata.filename) {
-                        context.resources.getIdentifier(
-                            photoMetadata.filename,
-                            "drawable",
-                            context.packageName
-                        )
+                    val imageUri = remember(photoMetadata.filename) {
+                        fileManager.getImageUri(photoMetadata.filename)
                     }
 
                     Box(
@@ -271,10 +268,11 @@ fun PhotoSpotDetailContent(
                                 onPhotoClick(photoMetadata.id)
                             }
                     ) {
-                        if (drawableResId != 0) {
+                        if (imageUri != null) {
                             AsyncImage(
                                 model = ImageRequest.Builder(context)
-                                    .data(drawableResId)
+                                    .data(imageUri)
+                                    .crossfade(true)
                                     .build(),
                                 contentDescription = photoMetadata.filename,
                                 contentScale = ContentScale.Crop,

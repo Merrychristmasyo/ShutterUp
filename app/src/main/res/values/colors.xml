@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 기본 Material 색상 -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -7,4 +8,27 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- 라이트 모드 색상 -->
+    <color name="primary">#FF1A1A1A</color>
+    <color name="on_primary">#FFFFFFFF</color>
+    <color name="secondary">#FFFF7B47</color>
+    <color name="on_secondary">#FFFFFFFF</color>
+    <color name="tertiary">#FF5BA0F2</color>
+    <color name="on_tertiary">#FFFFFFFF</color>
+    
+    <color name="background">#FFFFFFFF</color>
+    <color name="on_background">#FF1A1A1A</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="on_surface">#FF1A1A1A</color>
+    <color name="surface_variant">#FFF5F5F5</color>
+    <color name="on_surface_variant">#FF666666</color>
+    
+    <!-- 시스템 색상 -->
+    <color name="error">#FFFF6B6B</color>
+    <color name="on_error">#FFFFFFFF</color>
+    
+    <color name="success">#FF4CAF50</color>
+    <color name="warning">#FFFFA726</color>
+    <color name="info">#FF2196F3</color>
 </resources>
