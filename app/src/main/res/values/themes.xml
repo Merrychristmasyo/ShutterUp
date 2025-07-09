@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.ShutterUp" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- ① 앱의 기본 테마 -->
+    <style name="Theme.ShutterUp" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- 앱 전반 색상·타이틀바 등 설정 -->
+
+        <!-- 아래부터 추가 -->
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/Theme.ShutterUp</item>
+        <!-- 여기까지 -->
+    </style>
+
 </resources>

@@ -1,6 +1,7 @@
 package com.example.shutterup.repository
 
 import android.content.Context
+import com.example.shutterup.model.PhotoMetadata
 import com.example.shutterup.model.Profile
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope

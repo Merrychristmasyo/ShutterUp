@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Android 12+ 스플래시 테마 -->
+    <style name="Theme.ShutterUp.Splash" parent="Theme.SplashScreen">
+        <!-- 배경색 -->
+        <item name="android:windowSplashScreenBackground"
+            tools:targetApi="s">@color/white</item>
+
+        <!-- 여기에 Vector Drawable 로고를 지정 -->
+        <item name="android:windowSplashScreenAnimatedIcon"
+            tools:targetApi="s">@drawable/ic_splash_logo</item>
+
+        <!-- 애니메이션 지속시간 -->
+        <item name="android:windowSplashScreenAnimationDuration">1000</item>
+
+        <!-- 스플래시 종료 후 돌아갈 기본 테마 -->
+        <item name="postSplashScreenTheme">@style/Theme.ShutterUp</item>
+    </style>
+
+</resources>

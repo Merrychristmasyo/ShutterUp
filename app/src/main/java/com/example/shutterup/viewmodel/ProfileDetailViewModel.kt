@@ -37,4 +37,5 @@ class ProfileDetailViewModel @Inject constructor(
             _photos.value = photoRepo.getPhotoMetadataListByUserId(userId)
         }
     }
+
 }

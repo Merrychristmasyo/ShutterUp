@@ -66,6 +66,16 @@ class PhotoMetadataRepository @Inject constructor(
         return photoMetadata.filter { it.photoSpotId == photoSpotId }
     }
 
+    // 예시: userId로 사진 메타데이터 조회
+    suspend fun getPhotoMetadataListByUserId(userId: String): List<PhotoMetadata> {
+        val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
+        return withContext(Dispatchers.IO) {
+            photoMetadata
+                .filter { it.userId == userId }
+            //.flatMap { it.photos }  // Profile 안에 photos 프로퍼티가 있다고 가정
+        }
+    }
+
     suspend fun getThumbnailPhotoMetadataList(): HashMap<String, PhotoMetadata> {
         val photoMetadata = _cachedPhotoMetadata.first { it != null } ?: emptyList()
         val thumbnailMap = hashMapOf<String, PhotoMetadata>()
