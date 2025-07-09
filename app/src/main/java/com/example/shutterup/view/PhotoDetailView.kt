@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -167,41 +168,66 @@ fun PhotoDetailScreenContent(
 @Composable
 fun PhotoDetailImageSection(photoMetadata: PhotoMetadata?, fileManager: FileManager) {
     val context = LocalContext.current
+    var isFullScreen by remember { mutableStateOf(false) }
+    
     val imageUri = remember(photoMetadata?.filename) {
         photoMetadata?.filename?.let { filename ->
             fileManager.getImageUri(filename)
         }
     }
 
-    if (imageUri != null) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(imageUri)
-                .crossfade(true)
-                .build(),
-            contentDescription = photoMetadata?.filename ?: "Photo",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-        )
-    } else {
-        // 이미지가 없을 때 플레이스홀더
+    if (isFullScreen && imageUri != null) {
+        // 전체 화면 모드
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .fillMaxSize()
+                .background(Color.Black)
+                .clickable { isFullScreen = false }, // 터치하면 전체 화면 종료
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "이미지를 불러올 수 없습니다",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageUri)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = photoMetadata?.filename ?: "Photo",
+                contentScale = ContentScale.Fit, // 전체 화면에서는 Fit 사용
+                modifier = Modifier.fillMaxSize()
             )
+        }
+    } else {
+        // 일반 모드
+        if (imageUri != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageUri)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = photoMetadata?.filename ?: "Photo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(0.dp))
+                    .border(1.dp, Color.Gray, RoundedCornerShape(0.dp))
+                    .clickable { isFullScreen = true } // 클릭하면 전체 화면 모드
+            )
+        } else {
+            // 이미지가 없을 때 플레이스홀더
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(0.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "이미지를 불러올 수 없습니다",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -282,20 +308,48 @@ fun PhotoDetailTabSection(
 @Composable
 fun ShootingMethodTabContent(photoMetadata: PhotoMetadata?) {
     photoMetadata?.let { metadata ->
-        Text(
-            text = "촬영 방법: ${metadata.shootingMethod}",
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = metadata.description)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Tags: ${metadata.tags.joinToString(", ")}",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
-        )
-
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "촬영 방법",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Text(
+                text = metadata.shootingMethod ?: "정보 없음",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = "설명",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            
+            Text(
+                text = metadata.description ?: "설명 없음",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = "태그",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            
+            Text(
+                text = metadata.tags?.joinToString(", ") ?: "태그 없음",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+        }
     } ?: Text("촬영 방법 정보 없음")
 }
 
@@ -308,16 +362,16 @@ fun ShootingTimeTabContent(photoMetadata: PhotoMetadata?, photoDetail: PhotoDeta
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text("F값: ${metadata.fNumber}")
-        Text("초점거리: ${metadata.focalLength}")
-        Text("ISO: ${metadata.iso}")
-        Text("셔터속도: ${metadata.shutterSpeed}")
-        Text("렌즈: ${metadata.lensName}")
-        Text("카메라: ${metadata.cameraName}")
+        Text("F값: ${metadata.fNumber ?: "정보 없음"}")
+        Text("초점거리: ${metadata.focalLength ?: "정보 없음"}")
+        Text("ISO: ${metadata.iso ?: "정보 없음"}")
+        Text("셔터속도: ${metadata.shutterSpeed ?: "정보 없음"}")
+        Text("렌즈: ${metadata.lensName ?: "정보 없음"}")
+        Text("카메라: ${metadata.cameraName ?: "정보 없음"}")
         photoDetail?.let { detail ->
-            Text("촬영일시: ${detail.timestamp}")
+            Text("업로드 시각: ${detail.timestamp ?: "정보 없음"}")
         }
-    } ?: Text("촬영 시간 정보 없음")
+    } ?: Text("업로드 시간 정보 없음")
 }
 
 @Composable

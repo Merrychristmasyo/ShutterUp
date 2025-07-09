@@ -134,4 +134,7 @@ dependencies {
     // Google Play Services Location
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
+    // Core Splash Screen (시스템 스플래시 제어용)
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
 }

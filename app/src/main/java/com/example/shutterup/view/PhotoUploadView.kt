@@ -215,15 +215,16 @@ fun PhotoUploadView(
                                 spotName = finalSpotName,
                                 latitude = lat,
                                 longitude = lng,
-                                description = description,
-                                tags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() },
-                                fNumber = fNumber,
-                                focalLength = focalLength,
-                                iso = iso,
-                                shutterSpeed = shutterSpeed,
-                                lensName = lensName,
-                                cameraName = cameraName,
-                                shootingMethod = shootingMethod
+                                userId = "user_001",
+                                description = if (description.isNotBlank()) description else null,
+                                tags = if (tags.isNotBlank()) tags.split(",").map { it.trim() }.filter { it.isNotEmpty() } else null,
+                                fNumber = if (fNumber.isNotBlank()) fNumber else null,
+                                focalLength = if (focalLength.isNotBlank()) focalLength else null,
+                                iso = if (iso.isNotBlank()) iso else null,
+                                shutterSpeed = if (shutterSpeed.isNotBlank()) shutterSpeed else null,
+                                lensName = if (lensName.isNotBlank()) lensName else null,
+                                cameraName = if (cameraName.isNotBlank()) cameraName else null,
+                                shootingMethod = if (shootingMethod.isNotBlank()) shootingMethod else null
                             )
                             android.util.Log.d("PhotoUpload", "uploadData created: $uploadData")
                             viewModel.uploadPhoto(uploadData, selectedImageUri)
@@ -361,37 +362,6 @@ fun PhotoSelectionStep(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 선택된 이미지 상태 표시
-            selectedImageUri?.let { uri ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.CheckCircle,
-                            contentDescription = "선택 완료",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "사진이 선택되었습니다",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-            
             // 갤러리 그리드
             if (galleryImages.isEmpty()) {
                 Box(
@@ -694,6 +664,35 @@ fun LocationSelectionStep(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("새 위치 추가")
             }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onBack,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("이전")
+                }
+                
+                Button(
+                    onClick = onNext,
+                    enabled = selectedPhotoSpot != null || isCustomLocation,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        if (selectedPhotoSpot == null && !isCustomLocation) "위치를 선택해주세요"
+                        else "다음"
+                    )
+                    if (selectedPhotoSpot != null || isCustomLocation) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                    }
+                }
+            }
         } else {
             // 새 위치 입력 폼 (지도 기반)
             Column(
@@ -847,35 +846,6 @@ fun LocationSelectionStep(
                 }
             }
         }
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("이전")
-            }
-            
-            Button(
-                onClick = onNext,
-                enabled = selectedPhotoSpot != null || isCustomLocation,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    if (selectedPhotoSpot == null && !isCustomLocation) "위치를 선택해주세요"
-                    else "다음"
-                )
-                if (selectedPhotoSpot != null || isCustomLocation) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-                }
-            }
-        }
     }
 }
 
@@ -942,9 +912,10 @@ fun MetadataInputStep(
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
-                label = { Text("설명") },
+                label = { Text("설명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
-                minLines = 3
+                minLines = 3,
+                placeholder = { Text("사진에 대한 설명을 자유롭게 작성하세요") }
             )
         }
         
@@ -952,15 +923,22 @@ fun MetadataInputStep(
             OutlinedTextField(
                 value = tags,
                 onValueChange = onTagsChange,
-                label = { Text("태그 (쉼표로 구분)") },
+                label = { Text("태그 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("예: 일몰, 한강, 자연") }
+                placeholder = { Text("예: 일몰, 한강, 자연") },
+                supportingText = {
+                    Text(
+                        text = "쉼표로 구분해서 입력하세요",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             )
         }
         
         item {
             Text(
-                text = "카메라 설정",
+                text = "카메라 설정 (선택)",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -973,7 +951,7 @@ fun MetadataInputStep(
                 OutlinedTextField(
                     value = fNumber,
                     onValueChange = onFNumberChange,
-                    label = { Text("F값") },
+                    label = { Text("F값 (선택)") },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("f/2.8") }
                 )
@@ -981,7 +959,7 @@ fun MetadataInputStep(
                 OutlinedTextField(
                     value = focalLength,
                     onValueChange = onFocalLengthChange,
-                    label = { Text("초점거리") },
+                    label = { Text("초점거리 (선택)") },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("50mm") }
                 )
@@ -995,7 +973,7 @@ fun MetadataInputStep(
                 OutlinedTextField(
                     value = iso,
                     onValueChange = onIsoChange,
-                    label = { Text("ISO") },
+                    label = { Text("ISO (선택)") },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("200") }
                 )
@@ -1003,7 +981,7 @@ fun MetadataInputStep(
                 OutlinedTextField(
                     value = shutterSpeed,
                     onValueChange = onShutterSpeedChange,
-                    label = { Text("셔터속도") },
+                    label = { Text("셔터속도 (선택)") },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("1/250s") }
                 )
@@ -1014,7 +992,7 @@ fun MetadataInputStep(
             OutlinedTextField(
                 value = lensName,
                 onValueChange = onLensNameChange,
-                label = { Text("렌즈명") },
+                label = { Text("렌즈명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Canon EF 50mm f/1.8") }
             )
@@ -1024,7 +1002,7 @@ fun MetadataInputStep(
             OutlinedTextField(
                 value = cameraName,
                 onValueChange = onCameraNameChange,
-                label = { Text("카메라명") },
+                label = { Text("카메라명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Canon EOS R5") }
             )
@@ -1046,7 +1024,7 @@ fun MetadataInputStep(
                 
                 Button(
                     onClick = onNext,
-                    enabled = description.isNotBlank(),
+                    enabled = true, // description은 이제 선택사항이므로 항상 활성화
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("다음")
@@ -1082,10 +1060,34 @@ fun DetailInputStep(
         OutlinedTextField(
             value = shootingMethod,
             onValueChange = onShootingMethodChange,
-            label = { Text("촬영 방법") },
+            label = { Text("촬영 방법 (선택)") },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("예: 수동, 자동, 야간모드") }
+            placeholder = { Text("예: 수동, 자동, 야간모드\n삼각대 사용, 플래시 사용 등") },
+            minLines = 3,
+            maxLines = 5
         )
+        
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "업로드 시각",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "업로드 시점에 자동으로 기록됩니다",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         
         errorMessage?.let { message ->
             Card(
@@ -1120,7 +1122,7 @@ fun DetailInputStep(
             
             Button(
                 onClick = onUpload,
-                enabled = !isUploading && shootingMethod.isNotBlank(),
+                enabled = !isUploading, // 모든 필드가 선택사항이므로 항상 활성화
                 modifier = Modifier.weight(1f)
             ) {
                 if (isUploading) {
@@ -1198,16 +1200,15 @@ fun LocationPickerMapView(
                             // 기존 사용자 선택 마커 제거
                             userSelectedAnnotationManager?.deleteAll()
                             
-                            // 새 사용자 선택 마커 추가 (빨간색으로 구분)
-                            val displayName = if (selectedLocationName.isNotBlank()) selectedLocationName else "새 위치"
+                            // 새 사용자 선택 마커 추가 (기본 마커 사용)
                             val pointAnnotationOptions = PointAnnotationOptions()
                                 .withPoint(point)
-                                .withTextField(displayName)
-                                .withTextSize(14.0)
+                                .withTextField("새 위치")
+                                .withTextSize(12.0)
                                 .withTextColor(android.graphics.Color.RED)
                                 .withTextHaloColor(android.graphics.Color.WHITE)
                                 .withTextHaloWidth(2.0)
-                                .withTextOffset(listOf(0.0, -2.0)) // 텍스트를 핀 위쪽에 위치
+                                .withTextOffset(listOf(0.0, -2.0))
                             
                             userSelectedAnnotationManager?.create(pointAnnotationOptions)
                             
@@ -1229,7 +1230,7 @@ fun LocationPickerMapView(
         },
         modifier = modifier,
         update = { mapView ->
-            // 선택된 위치의 이름이 변경되면 마커 업데이트
+            // 선택된 위치 업데이트
             try {
                 selectedLocation?.let { (lat, lng) ->
                     userSelectedAnnotationManager?.deleteAll()
@@ -1239,7 +1240,7 @@ fun LocationPickerMapView(
                     val pointAnnotationOptions = PointAnnotationOptions()
                         .withPoint(point)
                         .withTextField(displayName)
-                        .withTextSize(14.0)
+                        .withTextSize(12.0)
                         .withTextColor(android.graphics.Color.RED)
                         .withTextHaloColor(android.graphics.Color.WHITE)
                         .withTextHaloWidth(2.0)
