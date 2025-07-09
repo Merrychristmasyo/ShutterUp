@@ -1156,11 +1156,15 @@ fun LocationPickerMapView(
             MapView(context).apply {
                 // 지도 초기 설정
                 mapboxMap.loadStyle(Style.MAPBOX_STREETS) { style ->
-                    // 초기 카메라 위치 설정 (KAIST 위치)
-                    val initialLocation = Point.fromLngLat(127.3595, 36.3714)
+                    // 초기 카메라 위치 설정 (포토스팟이 있으면 첫 번째 위치, 없으면 기본값)
+                    val initialLocation = if (existingPhotoSpots.isNotEmpty()) {
+                        Point.fromLngLat(existingPhotoSpots.first().longitude, existingPhotoSpots.first().latitude)
+                    } else {
+                        Point.fromLngLat(127.0, 37.0) // 한국 중심부
+                    }
                     val cameraOptions = CameraOptions.Builder()
                         .center(initialLocation)
-                        .zoom(15.0)
+                        .zoom(10.0)
                         .build()
                     
                     mapboxMap.setCamera(cameraOptions)

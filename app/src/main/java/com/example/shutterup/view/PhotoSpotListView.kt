@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -97,9 +98,6 @@ fun PhotoSpotListView(
     
     // 초기 설정 및 권한 확인
     LaunchedEffect(Unit) {
-        // 앱 시작 시 즉시 기본 위치 설정 (에뮬레이터 대응)
-        viewModel.updateUserLocation(37.5665, 126.9780)
-        
         // 권한 확인
         hasLocationPermission = ContextCompat.checkSelfPermission(
             context,
@@ -110,13 +108,18 @@ fun PhotoSpotListView(
             Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
         
-        if (!hasLocationPermission) {
-            locationPermissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
+        if (hasLocationPermission) {
+            // 권한이 있으면 즉시 위치 가져오기
+            try {
+                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        viewModel.updateUserLocation(location.latitude, location.longitude)
+                    }
+                }
+            } catch (e: SecurityException) {
+                android.util.Log.e("PhotoSpotList", "Location permission error: ${e.message}")
+            }
         }
     }
     
@@ -162,10 +165,8 @@ fun PhotoSpotListView(
                     isLocationTracking = true
                 }
             } catch (e: SecurityException) {
-                // 권한이 없는 경우 기본 위치 (서울) 사용
-                if (userLocation == null) {
-                    viewModel.updateUserLocation(37.5665, 126.9780)
-                }
+                // 권한이 없는 경우 처리하지 않음
+                android.util.Log.e("PhotoSpotList", "Location permission denied: ${e.message}")
             }
         }
     }
@@ -191,89 +192,165 @@ fun PhotoSpotListView(
         val minHeight = 80.dp // 최소 높이
         val maxHeight = screenHeight * 0.8f // 최대 높이 (화면의 80%)
         
-        // 1. Mapbox 지도 (전체 화면)
-        Box(modifier = Modifier.fillMaxSize()) {
-            PhotoSpotMapView(
-                photoSpots = filteredPhotoSpots, // 검색 결과를 지도에 표시
-                selectedPhotoSpot = selectedPhotoSpot,
-                bottomSheetHeight = bottomSheetHeight,
-                shouldApplyPadding = shouldApplyPadding, // 패딩 적용 여부 전달
-                userLocation = userLocation,
-                onMarkerClick = { photoSpot ->
-                    selectedPhotoSpot = photoSpot
-                    shouldApplyPadding = true // 마커 클릭 시 패딩 적용
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-            
-            // Floating 검색창 또는 포토스팟 이름 표시
-            if (selectedPhotoSpot == null) {
-                FloatingSearchBar(
-                    searchQuery = searchQuery,
-                    onSearchQueryChange = { query ->
-                        viewModel.setSearchQuery(query)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .align(Alignment.TopCenter)
-                )
-            } else {
-                FloatingPhotoSpotTitle(
-                    photoSpotName = selectedPhotoSpot!!.name,
-                    onBackClick = { selectedPhotoSpot = null },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .align(Alignment.TopCenter)
-                )
-            }
-        }
-
-        // 2. 커스텀 BottomSheet - 항상 표시
-        CustomBottomSheet(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(bottomSheetHeight)
-                .align(Alignment.BottomCenter)
-                .draggable(
-                    orientation = Orientation.Vertical,
-                    state = rememberDraggableState { delta ->
-                        val newHeight = bottomSheetHeight - delta.dp
-                        bottomSheetHeight = newHeight.coerceIn(minHeight, maxHeight)
-                        shouldApplyPadding = false // BottomSheet 움직일 때 패딩 제거
+        // 권한이 없을 때만 권한 요청 화면 표시
+        if (!hasLocationPermission) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "위치 권한이 필요합니다",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "포토 스팟을 찾고 거리를 계산하려면 위치 권한을 허용해주세요",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    Button(
+                        onClick = {
+                            locationPermissionLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                )
+                            )
+                        },
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        Text("위치 권한 허용하기")
                     }
-                ),
-            onDismiss = { 
-                // BottomSheet는 항상 표시되므로 dismiss 기능 제거
-                selectedPhotoSpot = null
+                }
             }
-        ) {
-            if (selectedPhotoSpot == null) {
-                // 전체 포토스팟 목록 (초기 화면)
-                PhotoSpotBottomSheetContent(
-                    photoSpots = filteredPhotoSpots, // 검색 결과를 리스트에 표시
-                    thumbnailPhotoMetadataList = thumbnailPhotoMetadataList,
-                    isLoading = isLoading,
-                    errorMessage = errorMessage,
+        } else {
+            // 권한이 있을 때 정상적인 지도 화면 표시
+            // 1. Mapbox 지도 (전체 화면)
+            Box(modifier = Modifier.fillMaxSize()) {
+                PhotoSpotMapView(
+                    photoSpots = filteredPhotoSpots, // 검색 결과를 지도에 표시
+                    selectedPhotoSpot = selectedPhotoSpot,
+                    bottomSheetHeight = bottomSheetHeight,
+                    shouldApplyPadding = shouldApplyPadding, // 패딩 적용 여부 전달
                     userLocation = userLocation,
-                    searchQuery = searchQuery,
-                    onLocationUpdate = { lat, lng ->
-                        viewModel.updateUserLocation(lat, lng)
-                    },
-                    onPhotoSpotClick = { photoSpot ->
+                    onMarkerClick = { photoSpot ->
                         selectedPhotoSpot = photoSpot
-                        shouldApplyPadding = true // 포토스팟 클릭 시 패딩 적용
+                        shouldApplyPadding = true // 마커 클릭 시 패딩 적용
                     },
-                    fileManager = fileManager
+                    modifier = Modifier.fillMaxSize()
                 )
-            } else {
-                // 선택된 스팟의 사진 그리드 (상세 화면)
-                PhotoSpotDetailBottomSheet(
-                    photoSpot = selectedPhotoSpot!!,
-                    onPhotoClick = onPhotoClick,
-                    fileManager = fileManager
-                )
+                
+                // Floating 검색창 또는 포토스팟 이름 표시
+                if (selectedPhotoSpot == null) {
+                    // 전체 목록 화면 - 검색창 표시
+                    FloatingSearchBar(
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = { query ->
+                            viewModel.setSearchQuery(query)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .align(Alignment.TopCenter)
+                    )
+                } else {
+                    // 선택된 포토스팟 화면 - 포토스팟 이름과 뒤로가기 버튼 표시
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .align(Alignment.TopCenter),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 4.dp
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = { 
+                                    selectedPhotoSpot = null
+                                    shouldApplyPadding = false // 뒤로가기 시 패딩 해제
+                                }
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "뒤로가기"
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            Text(
+                                text = selectedPhotoSpot!!.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // 2. 드래그 가능한 BottomSheet
+            CustomBottomSheet(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(bottomSheetHeight)
+                    .align(Alignment.BottomCenter)
+                    .draggable(
+                        orientation = Orientation.Vertical,
+                        state = rememberDraggableState { delta ->
+                            val newHeight = bottomSheetHeight - delta.dp
+                            bottomSheetHeight = newHeight.coerceIn(minHeight, maxHeight)
+                        }
+                    ),
+                onDismiss = { /* 필요시 구현 */ }
+            ) {
+                if (selectedPhotoSpot == null) {
+                    // 전체 포토스팟 목록 (초기 화면)
+                    PhotoSpotBottomSheetContent(
+                        photoSpots = filteredPhotoSpots, // 검색 결과를 리스트에 표시
+                        thumbnailPhotoMetadataList = thumbnailPhotoMetadataList,
+                        isLoading = isLoading,
+                        errorMessage = errorMessage,
+                        userLocation = userLocation,
+                        searchQuery = searchQuery,
+                        onLocationUpdate = { lat, lng ->
+                            viewModel.updateUserLocation(lat, lng)
+                        },
+                        onPhotoSpotClick = { photoSpot ->
+                            selectedPhotoSpot = photoSpot
+                            shouldApplyPadding = true // 포토스팟 클릭 시 패딩 적용
+                        },
+                        fileManager = fileManager
+                    )
+                } else {
+                    // 선택된 스팟의 사진 그리드 (상세 화면)
+                    PhotoSpotDetailBottomSheet(
+                        photoSpot = selectedPhotoSpot!!,
+                        onPhotoClick = onPhotoClick,
+                        fileManager = fileManager
+                    )
+                }
             }
         }
     }
@@ -334,10 +411,9 @@ fun PhotoSpotMapView(
                 mapView = this
                 // 지도 스타일 설정
                 mapboxMap.loadStyle(Style.MAPBOX_STREETS) { style ->
-                    // 사용자 위치 또는 서울 중심으로 카메라 설정
-                    val centerLocation = userLocation ?: Pair(37.5665, 126.9780)
+                    // 현재 위치를 우선으로 카메라 설정
                     val cameraOptions = CameraOptions.Builder()
-                        .center(Point.fromLngLat(centerLocation.second, centerLocation.first))
+                        .center(Point.fromLngLat(127.0, 37.0)) // 기본 위치 (한국 중심)
                         .zoom(11.0)
                         .build()
                     
@@ -358,7 +434,7 @@ fun PhotoSpotMapView(
         update = { mapView ->
             // selectedPhotoSpot이나 userLocation이 변경될 때마다 마커 업데이트
             mapView.mapboxMap.getStyle { style ->
-                // 선택된 포토스팟이 있으면 해당 위치로 카메라 이동
+                // 선택된 포토스팟이 있으면 해당 위치로 카메라 이동 (최우선)
                 selectedPhotoSpot?.let { photoSpot ->
                     val cameraOptionsBuilder = CameraOptions.Builder()
                         .center(Point.fromLngLat(photoSpot.longitude, photoSpot.latitude))
@@ -381,11 +457,11 @@ fun PhotoSpotMapView(
                     
                     mapView.mapboxMap.setCamera(cameraOptionsBuilder.build())
                 } ?: run {
-                    // 선택된 포토스팟이 없고 사용자 위치가 있으면 사용자 위치 중심으로
+                    // 선택된 포토스팟이 없고 사용자 위치가 있으면 사용자 위치로 카메라 이동
                     userLocation?.let { location ->
                         val cameraOptions = CameraOptions.Builder()
                             .center(Point.fromLngLat(location.second, location.first))
-                            .zoom(13.0) // 적당한 줌 레벨
+                            .zoom(13.0)
                             .build()
                         
                         mapView.mapboxMap.setCamera(cameraOptions)
