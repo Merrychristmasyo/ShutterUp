@@ -54,7 +54,6 @@ ShutterUp은 포토그래퍼들이 아름다운 촬영 장소를 발견하고, �
 ### Architecture
 - **MVVM Pattern** - ViewModel 기반 아키텍처
 - **Repository Pattern** - 데이터 접근 추상화
-- **Clean Architecture** - 관심사 분리
 
 ## 앱 스크린샷
 
