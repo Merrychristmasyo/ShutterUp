@@ -37,6 +37,7 @@ import com.example.shutterup.model.PhotoReview
 import com.example.shutterup.model.PhotoSpot
 import com.example.shutterup.viewmodel.PhotoDetailViewModel
 import com.example.shutterup.utils.FileManager
+import com.example.shutterup.utils.keyboardPadding
 import com.example.shutterup.ui.components.LoadingComponent
 import com.example.shutterup.ui.components.ErrorComponent
 import com.mapbox.geojson.Point
@@ -138,7 +139,8 @@ fun PhotoDetailScreenContent(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(1f)
+                        .keyboardPadding(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     item {

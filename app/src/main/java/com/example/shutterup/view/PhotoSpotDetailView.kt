@@ -34,6 +34,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shutterup.viewmodel.PhotoSpotDetailViewModel
 import com.example.shutterup.utils.FileManager
+import com.example.shutterup.utils.keyboardPadding
 import com.example.shutterup.ui.components.LoadingComponent
 import com.example.shutterup.ui.components.ErrorComponent
 import com.example.shutterup.ui.components.EmptyStateComponent
@@ -132,6 +133,7 @@ fun PhotoSpotDetailContent(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .keyboardPadding()
     ) {
         // 상단 제목
         Text(
@@ -244,7 +246,8 @@ fun PhotoSpotDetailContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(400.dp)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .keyboardPadding(),
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)

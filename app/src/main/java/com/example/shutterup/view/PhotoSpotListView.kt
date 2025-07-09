@@ -31,6 +31,8 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -39,7 +41,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.gestures.Orientation
@@ -64,6 +68,7 @@ import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.gestures
+import com.example.shutterup.utils.keyboardPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,6 +106,9 @@ fun PhotoSpotListView(
     
     // 초기 설정 및 권한 확인
     LaunchedEffect(Unit) {
+        // 데이터 새로고침
+        viewModel.refreshPhotoSpots()
+        
         // 권한 확인
         hasLocationPermission = ContextCompat.checkSelfPermission(
             context,
@@ -747,7 +755,8 @@ fun PhotoSpotDetailBottomSheet(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 16.dp)
+                        .keyboardPadding(),
                     contentPadding = PaddingValues(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -994,6 +1003,7 @@ fun FloatingSearchBar(
 ) {
     var inputText by remember { mutableStateOf(searchQuery) }
     var isExpanded by remember { mutableStateOf(false) }
+    val keyboardController = LocalSoftwareKeyboardController.current
     
     // searchQuery가 변경될 때 inputText 동기화
     LaunchedEffect(searchQuery) {
@@ -1023,13 +1033,25 @@ fun FloatingSearchBar(
             // 검색 텍스트필드
             BasicTextField(
                 value = inputText,
-                onValueChange = { inputText = it },
+                onValueChange = { 
+                    inputText = it
+                    onSearchQueryChange(it)
+                },
                 modifier = Modifier
                     .weight(1f)
                     .clickable { isExpanded = true },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     color = MaterialTheme.colorScheme.onSurface
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = { 
+                        keyboardController?.hide()
+                        onSearchQueryChange(inputText)
+                    }
                 ),
                 decorationBox = { innerTextField ->
                     if (inputText.isEmpty()) {

@@ -114,6 +114,11 @@ class PhotoSpotListViewModel @Inject constructor(
             }
         }
     }
+    
+    // 외부에서 호출할 수 있는 새로고침 메서드
+    fun refreshPhotoSpots() {
+        loadPhotoSpots()
+    }
 
     // 두 지점 간의 직선 거리 계산 (Haversine 공식)
     private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {

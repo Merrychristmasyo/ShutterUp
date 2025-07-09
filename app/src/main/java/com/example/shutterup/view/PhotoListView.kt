@@ -33,6 +33,7 @@ import com.example.shutterup.viewmodel.PhotoListViewModel
 import com.example.shutterup.ui.theme.*
 import java.util.Collections
 import com.example.shutterup.utils.FileManager
+import com.example.shutterup.utils.keyboardPadding
 import com.example.shutterup.model.PhotoMetadata
 
 @Composable
@@ -44,6 +45,11 @@ fun PhotoListView(
     val photoMetadata by viewModel.photoMetadata.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
     val errorMessage by viewModel.errorMessage.observeAsState()
+
+    // 화면 진입 시 데이터 새로고침
+    LaunchedEffect(Unit) {
+        viewModel.refreshData()
+    }
 
     Column(
         modifier = Modifier
@@ -180,7 +186,9 @@ private fun PhotoGridSection(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .keyboardPadding(),
         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)

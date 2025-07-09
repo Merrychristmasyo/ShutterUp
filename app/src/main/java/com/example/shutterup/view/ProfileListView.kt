@@ -7,9 +7,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shutterup.model.Profile
@@ -24,6 +28,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
+import com.example.shutterup.utils.keyboardPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -165,7 +170,9 @@ private fun ProfileContentSection(
     onFavoriteClick: (String) -> Unit
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .keyboardPadding(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
     ) {
         val filtered = if (searchQuery.isBlank()) profiles
@@ -196,6 +203,8 @@ private fun ProfileHeaderSection(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -235,6 +244,14 @@ private fun ProfileHeaderSection(
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Search
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSearch = { 
+                            keyboardController?.hide()
+                        }
                     ),
                     decorationBox = { innerTextField ->
                         if (searchQuery.isEmpty()) {

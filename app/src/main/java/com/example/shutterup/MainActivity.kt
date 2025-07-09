@@ -48,6 +48,7 @@ import javax.inject.Inject
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.shutterup.utils.keyboardPadding
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -85,7 +86,9 @@ class MainActivity : ComponentActivity() {
                         NavHost(
                             navController = navController,
                             startDestination = Screen.PhotoSpotList.route,
-                            modifier = Modifier.padding(innerPadding)
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .keyboardPadding()
                         ) {
                             composable(Screen.PhotoSpotList.route) {
                                 PhotoSpotListView(

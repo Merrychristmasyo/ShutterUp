@@ -47,5 +47,10 @@ class PhotoListViewModel @Inject constructor(
             }
         }
     }
+    
+    // 외부에서 호출할 수 있는 새로고침 메서드
+    fun refreshData() {
+        loadData()
+    }
 
 }

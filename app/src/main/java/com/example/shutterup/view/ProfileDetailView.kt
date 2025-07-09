@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.shutterup.ui.components.LoadingComponent
 import com.example.shutterup.ui.components.ErrorComponent
 import com.example.shutterup.ui.components.EmptyStateComponent
+import com.example.shutterup.utils.keyboardPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -307,7 +308,9 @@ private fun PhotoGridSection(userPhotos: List<com.example.shutterup.model.PhotoM
         // 3x3 그리드로 사진 표시
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .keyboardPadding(),
             contentPadding = PaddingValues(4.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)

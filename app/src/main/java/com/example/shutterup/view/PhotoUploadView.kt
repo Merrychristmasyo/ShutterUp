@@ -78,6 +78,7 @@ import android.content.Context
 import android.content.ContentUris
 
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import com.example.shutterup.utils.keyboardPadding
 //import androidx.compose.ui.platform.SoftwareKeyboardController
 //import androidx.compose.ui.text.input.ImeAction
 
@@ -604,6 +605,7 @@ fun LocationSelectionStep(
     var customSpotName by remember { mutableStateOf("") }
     var customLatitude by remember { mutableStateOf("") }
     var customLongitude by remember { mutableStateOf("") }
+    var showMapToggle by remember { mutableStateOf(false) }
     
     android.util.Log.d("PhotoUpload", "LocationSelectionStep - photoSpots size: ${photoSpots.size}")
     android.util.Log.d("PhotoUpload", "LocationSelectionStep - selectedPhotoSpot: $selectedPhotoSpot")
@@ -654,7 +656,9 @@ fun LocationSelectionStep(
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .keyboardPadding(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(photoSpots) { spot ->
@@ -733,158 +737,216 @@ fun LocationSelectionStep(
             }
         } else {
             // 새 위치 입력 폼 (지도 기반)
-            Column(
-                modifier = Modifier.weight(1f),
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .keyboardPadding(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = "지도에서 위치를 선택하세요",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                // 지도 컴포넌트
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    LocationPickerMapView(
-                        modifier = Modifier.fillMaxSize(),
-                        existingPhotoSpots = photoSpots,
-                        selectedLocationName = customSpotName,
-                        onLocationSelected = { lat, lng ->
-                            customLatitude = lat.toString()
-                            customLongitude = lng.toString()
-                        }
+                item {
+                    Text(
+                        text = "지도에서 위치를 선택하세요",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
                 }
                 
-                // 위치 이름 입력 필드
-                OutlinedTextField(
-                    value = customSpotName,
-                    onValueChange = { customSpotName = it },
-                    label = { Text("위치 이름") },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("포토 스팟의 이름을 입력하세요") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                item {
+                    // 지도 토글 버튼
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showMapToggle = !showMapToggle },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                if (showMapToggle) Icons.Default.LocationOn else Icons.Default.LocationOn,
+                                contentDescription = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(if (showMapToggle) "지도 숨기기" else "지도 보기")
+                        }
+                    }
+                }
+                
+                // 지도 컴포넌트 토글
+                if (showMapToggle) {
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            LocationPickerMapView(
+                                modifier = Modifier.fillMaxSize(),
+                                existingPhotoSpots = photoSpots,
+                                selectedLocationName = customSpotName,
+                                onLocationSelected = { lat, lng ->
+                                    customLatitude = lat.toString()
+                                    customLongitude = lng.toString()
+                                }
+                            )
+                        }
+                    }
+                }
+                
+                item {
+                    // 위치 이름 입력 필드
+                    OutlinedTextField(
+                        value = customSpotName,
+                        onValueChange = { customSpotName = it },
+                        label = { Text("위치 이름 *") },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("포토 스팟의 이름을 입력하세요") },
+                        singleLine = true,
+                        isError = customSpotName.isBlank() && customLatitude.isNotBlank(),
+                        supportingText = {
+                            if (customSpotName.isBlank() && customLatitude.isNotBlank()) {
+                                Text(
+                                    text = "위치 이름은 필수 입력 사항입니다",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        )
                     )
-                )
+                }
                 
                 // 선택된 위치 정보 표시
                 if (customLatitude.isNotBlank() && customLongitude.isNotBlank()) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
                         ) {
-                            Text(
-                                text = "선택된 좌표",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "위도: ${String.format("%.6f", customLatitude.toDoubleOrNull() ?: 0.0)}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = "경도: ${String.format("%.6f", customLongitude.toDoubleOrNull() ?: 0.0)}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "선택된 좌표",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "위도: ${String.format("%.6f", customLatitude.toDoubleOrNull() ?: 0.0)}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    text = "경도: ${String.format("%.6f", customLongitude.toDoubleOrNull() ?: 0.0)}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
                         }
                     }
                 } else {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
                         ) {
-                            Text(
-                                text = "💡 사용 방법",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "1. 지도에서 원하는 위치를 클릭하세요",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "2. 위치 이름을 입력하세요",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "3. 파란색 핀: 기존 포토 스팟",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "4. 빨간색 핀: 새로 선택한 위치",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "💡 사용 방법",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "1. '지도 보기' 버튼을 클릭하세요",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "2. 지도에서 원하는 위치를 클릭하세요",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "3. 위치 이름을 입력하세요 (필수)",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "4. 파란색 핀: 기존 포토 스팟",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "5. 빨간색 핀: 새로 선택한 위치",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
                 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = { 
-                            showCustomLocation = false
-                            customSpotName = ""
-                            customLatitude = ""
-                            customLongitude = ""
-                        },
-                        modifier = Modifier.weight(1f)
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("취소")
-                    }
-                    
-                    Button(
-                        onClick = {
-                            val lat = customLatitude.toDoubleOrNull()
-                            val lng = customLongitude.toDoubleOrNull()
-                            if (lat != null && lng != null && customSpotName.isNotBlank()) {
-                                // 임시로 커스텀 위치 정보만 저장 (실제 PhotoSpot 생성은 업로드 시에)
-                                onCustomLocationSet(lat, lng, customSpotName.trim())
-                                
-                                // 폼 리셋
+                        OutlinedButton(
+                            onClick = { 
+                                showCustomLocation = false
+                                showMapToggle = false
                                 customSpotName = ""
                                 customLatitude = ""
                                 customLongitude = ""
-                                showCustomLocation = false
-                                
-                                // 바로 다음 단계로 이동
-                                onNext()
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                        enabled = customSpotName.isNotBlank() && 
-                                 customLatitude.toDoubleOrNull() != null && 
-                                 customLongitude.toDoubleOrNull() != null
-                    ) {
-                        Text("확인")
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("취소")
+                        }
+                        
+                        Button(
+                            onClick = {
+                                val lat = customLatitude.toDoubleOrNull()
+                                val lng = customLongitude.toDoubleOrNull()
+                                if (lat != null && lng != null && customSpotName.isNotBlank()) {
+                                    // 임시로 커스텀 위치 정보만 저장 (실제 PhotoSpot 생성은 업로드 시에)
+                                    onCustomLocationSet(lat, lng, customSpotName.trim())
+                                    
+                                    // 폼 리셋
+                                    customSpotName = ""
+                                    customLatitude = ""
+                                    customLongitude = ""
+                                    showCustomLocation = false
+                                    showMapToggle = false
+                                    
+                                    // 바로 다음 단계로 이동
+                                    onNext()
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            enabled = customSpotName.isNotBlank() && 
+                                     customLatitude.toDoubleOrNull() != null && 
+                                     customLongitude.toDoubleOrNull() != null
+                        ) {
+                            Text(
+                                if (customSpotName.isBlank()) "위치 이름을 입력하세요"
+                                else if (customLatitude.isBlank()) "위치를 선택하세요"
+                                else "확인"
+                            )
+                        }
                     }
                 }
             }
@@ -958,13 +1020,10 @@ fun MetadataInputStep(
                 onValueChange = onDescriptionChange,
                 label = { Text("설명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
+                maxLines = 3,
                 placeholder = { Text("사진에 대한 설명을 자유롭게 작성하세요") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
-                )
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() })
             )
         }
         
@@ -1148,13 +1207,9 @@ fun DetailInputStep(
             label = { Text("촬영 방법 (선택)") },
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("예: 수동, 자동, 야간모드\n삼각대 사용, 플래시 사용 등") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
-            ),
-            minLines = 3,
-            maxLines = 5
+            maxLines = 5,
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() })
         )
         
         Card(
