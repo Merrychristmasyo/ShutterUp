@@ -22,6 +22,8 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
+import android.location.LocationManager
+import android.provider.Settings
 import kotlin.math.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
@@ -95,6 +97,7 @@ fun PhotoSpotListView(
     val context = LocalContext.current
     var hasLocationPermission by remember { mutableStateOf(false) }
     var isLocationTracking by remember { mutableStateOf(false) }
+    var isLocationServiceEnabled by remember { mutableStateOf(false) }
     
     // 위치 권한 요청
     val locationPermissionLauncher = rememberLauncherForActivityResult(
@@ -102,12 +105,42 @@ fun PhotoSpotListView(
     ) { permissions ->
         hasLocationPermission = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        
+        // 권한 허용 후 즉시 위치 가져오기
+        if (hasLocationPermission) {
+            try {
+                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        android.util.Log.d("PhotoSpotList", "Got location from permission callback: ${location.latitude}, ${location.longitude}")
+                        viewModel.updateUserLocation(location.latitude, location.longitude)
+                    } else {
+                        android.util.Log.d("PhotoSpotList", "No last known location available")
+                    }
+                }.addOnFailureListener { exception ->
+                    android.util.Log.e("PhotoSpotList", "Failed to get location: ${exception.message}")
+                }
+            } catch (e: SecurityException) {
+                android.util.Log.e("PhotoSpotList", "Location permission error after grant: ${e.message}")
+            }
+        }
+    }
+    
+    // 위치 서비스 활성화 확인 함수
+    fun isLocationServiceEnabled(): Boolean {
+        val locationManager = context.getSystemService(android.content.Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || 
+               locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
     
     // 초기 설정 및 권한 확인
     LaunchedEffect(Unit) {
         // 데이터 새로고침
         viewModel.refreshPhotoSpots()
+        
+        // 위치 서비스 활성화 확인
+        isLocationServiceEnabled = isLocationServiceEnabled()
+        android.util.Log.d("PhotoSpotList", "Location service enabled: $isLocationServiceEnabled")
         
         // 권한 확인
         hasLocationPermission = ContextCompat.checkSelfPermission(
@@ -119,14 +152,21 @@ fun PhotoSpotListView(
             Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
         
-        if (hasLocationPermission) {
-            // 권한이 있으면 즉시 위치 가져오기
+        android.util.Log.d("PhotoSpotList", "Location permission granted: $hasLocationPermission")
+        
+        if (hasLocationPermission && isLocationServiceEnabled) {
+            // 권한이 있고 위치 서비스가 활성화되어 있으면 즉시 위치 가져오기
             try {
                 val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     if (location != null) {
+                        android.util.Log.d("PhotoSpotList", "Got last known location: ${location.latitude}, ${location.longitude}")
                         viewModel.updateUserLocation(location.latitude, location.longitude)
+                    } else {
+                        android.util.Log.d("PhotoSpotList", "No last known location available")
                     }
+                }.addOnFailureListener { exception ->
+                    android.util.Log.e("PhotoSpotList", "Failed to get last location: ${exception.message}")
                 }
             } catch (e: SecurityException) {
                 android.util.Log.e("PhotoSpotList", "Location permission error: ${e.message}")
@@ -139,6 +179,7 @@ fun PhotoSpotListView(
         object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.lastLocation?.let { location ->
+                    android.util.Log.d("PhotoSpotList", "Location update received: ${location.latitude}, ${location.longitude} (accuracy: ${location.accuracy}m)")
                     viewModel.updateUserLocation(location.latitude, location.longitude)
                 }
             }
@@ -146,20 +187,22 @@ fun PhotoSpotListView(
     }
 
     // 현재 위치 가져오기 및 실시간 추적
-    LaunchedEffect(hasLocationPermission) {
-        if (hasLocationPermission) {
+    LaunchedEffect(hasLocationPermission, isLocationServiceEnabled) {
+        if (hasLocationPermission && isLocationServiceEnabled) {
             try {
                 val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
                 
                 // 먼저 마지막 알려진 위치 가져오기
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     if (location != null) {
+                        android.util.Log.d("PhotoSpotList", "Got location from tracking effect: ${location.latitude}, ${location.longitude}")
                         viewModel.updateUserLocation(location.latitude, location.longitude)
                     }
                 }
                 
                 // 실시간 위치 추적 시작
                 if (!isLocationTracking) {
+                    android.util.Log.d("PhotoSpotList", "Starting location tracking...")
                     val locationRequest = LocationRequest.Builder(
                         Priority.PRIORITY_HIGH_ACCURACY,
                         10000L // 10초마다 업데이트
@@ -174,11 +217,14 @@ fun PhotoSpotListView(
                         null
                     )
                     isLocationTracking = true
+                    android.util.Log.d("PhotoSpotList", "Location tracking started")
                 }
             } catch (e: SecurityException) {
                 // 권한이 없는 경우 처리하지 않음
                 android.util.Log.e("PhotoSpotList", "Location permission denied: ${e.message}")
             }
+        } else {
+            android.util.Log.d("PhotoSpotList", "Location tracking not started - Permission: $hasLocationPermission, Service: $isLocationServiceEnabled")
         }
     }
     
@@ -189,8 +235,10 @@ fun PhotoSpotListView(
                 try {
                     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
                     fusedLocationClient.removeLocationUpdates(locationCallback)
+                    isLocationTracking = false
+                    android.util.Log.d("PhotoSpotList", "Location tracking stopped")
                 } catch (e: Exception) {
-                    // 에러 무시
+                    android.util.Log.e("PhotoSpotList", "Error stopping location tracking: ${e.message}")
                 }
             }
         }
@@ -243,6 +291,55 @@ fun PhotoSpotListView(
                         modifier = Modifier.padding(top = 16.dp)
                     ) {
                         Text("위치 권한 허용하기")
+                    }
+                }
+            }
+        } else if (!isLocationServiceEnabled) {
+            // 위치 서비스 비활성화 안내 화면
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = "위치 서비스를 켜주세요",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "GPS나 네트워크 위치 서비스가 비활성화되어 있습니다. 설정에서 위치 서비스를 켜주세요.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    Button(
+                        onClick = {
+                            // 위치 설정 화면으로 이동
+                            val intent = android.content.Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        Text("위치 설정으로 이동")
+                    }
+                    
+                    // 다시 확인 버튼
+                    OutlinedButton(
+                        onClick = {
+                            isLocationServiceEnabled = isLocationServiceEnabled()
+                        }
+                    ) {
+                        Text("다시 확인")
                     }
                 }
             }
