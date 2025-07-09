@@ -196,37 +196,39 @@ fun PhotoDetailImageSection(photoMetadata: PhotoMetadata?, fileManager: FileMana
             )
         }
     } else {
-        // 일반 모드
-        if (imageUri != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(imageUri)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = photoMetadata?.filename ?: "Photo",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .clip(RoundedCornerShape(0.dp))
-                    .border(1.dp, Color.Gray, RoundedCornerShape(0.dp))
-                    .clickable { isFullScreen = true } // 클릭하면 전체 화면 모드
-            )
-        } else {
-            // 이미지가 없을 때 플레이스홀더
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .clip(RoundedCornerShape(0.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "이미지를 불러올 수 없습니다",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+        // 일반 모드 - 심플한 스타일
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .height(300.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .clickable { if (imageUri != null) isFullScreen = true }
+        ) {
+            if (imageUri != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(imageUri)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = photoMetadata?.filename ?: "Photo",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
@@ -234,20 +236,34 @@ fun PhotoDetailImageSection(photoMetadata: PhotoMetadata?, fileManager: FileMana
 
 @Composable
 fun PhotoDetailSpotInfoSection(photoSpot: PhotoSpot?) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp)
     ) {
+        if (photoSpot != null) {
+            Text(
+                text = "촬영 위치",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            
+            Text(
+                text = photoSpot.name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+        }
+        
         // 지도 부분
-        Card(
+        Box(
             modifier = Modifier
-                .weight(1f)
-                .height(120.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0))
+                .fillMaxWidth()
+                .height(140.dp)
+                .clip(RoundedCornerShape(12.dp))
         ) {
             if (photoSpot != null) {
                 PhotoDetailMapView(
@@ -257,8 +273,17 @@ fun PhotoDetailSpotInfoSection(photoSpot: PhotoSpot?) {
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("지도 정보 없음", color = Color.Gray)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "위치 정보 없음",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -275,31 +300,49 @@ fun PhotoDetailTabSection(
     photoDetail: PhotoDetail?,
     photoReviews: List<PhotoReview>
 ) {
-    TabRow(selectedTabIndex = selectedTabIndex) {
-        tabTitles.forEachIndexed { index, title ->
-            Tab(
-                selected = selectedTabIndex == index,
-                onClick = { onTabSelected(index) },
-                text = { Text(title) }
-            )
-        }
-    }
-
-    AnimatedContent(
-        targetState = selectedTabIndex,
-        transitionSpec = {
-            fadeIn() with fadeOut()
-        }, label = "tabContent"
-    ) { targetIndex ->
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        TabRow(
+            selectedTabIndex = selectedTabIndex,
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.primary
         ) {
-            when (targetIndex) {
-                0 -> ShootingMethodTabContent(photoMetadata = photoMetadata)
-                1 -> ShootingTimeTabContent(photoMetadata = photoMetadata, photoDetail = photoDetail)
-                2 -> ReviewsTabContent(photoReviews = photoReviews)
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { onTabSelected(index) },
+                    text = { 
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    selectedContentColor = MaterialTheme.colorScheme.primary,
+                    unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        AnimatedContent(
+            targetState = selectedTabIndex,
+            transitionSpec = {
+                fadeIn() with fadeOut()
+            }, label = "tabContent"
+        ) { targetIndex ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+            ) {
+                when (targetIndex) {
+                    0 -> ShootingMethodTabContent(photoMetadata = photoMetadata)
+                    1 -> ShootingTimeTabContent(photoMetadata = photoMetadata, photoDetail = photoDetail)
+                    2 -> ReviewsTabContent(photoReviews = photoReviews)
+                }
             }
         }
     }

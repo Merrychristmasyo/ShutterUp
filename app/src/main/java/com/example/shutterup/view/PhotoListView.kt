@@ -72,27 +72,15 @@ fun PhotoListView(
 
 @Composable
 private fun HeaderSection() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 2.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 앱 제목
-            Text(
-                text = "ShutterUp",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
+    Text(
+        text = "Gallery",
+        style = MaterialTheme.typography.headlineMedium,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    )
 }
 
 @Composable
@@ -193,9 +181,9 @@ private fun PhotoGridSection(
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items(photoMetadata.size) { index ->
             val photo = photoMetadata[index]
@@ -226,9 +214,9 @@ private fun PhotoGridItem(
         modifier = Modifier
             .aspectRatio(1f)
             .clickable { onPhotoClick(photo.id) }
+            .clip(RoundedCornerShape(8.dp))
     ) {
         if (imageUri != null) {
-            // 사진 표시
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(imageUri)
@@ -236,43 +224,20 @@ private fun PhotoGridItem(
                     .build(),
                 contentDescription = photo.filename,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(4.dp))
+                modifier = Modifier.fillMaxSize()
             )
-            
-            // 좋아요 버튼 오버레이 (핀터레스트 스타일)
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                contentAlignment = Alignment.TopEnd
-            ) {
-                IconButton(
-                    onClick = { isLiked = !isLiked },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isLiked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = if (isLiked) "Unlike" else "Like",
-                        tint = if (isLiked) Color(0xFF87CEEB) else Color.White, // 하늘색으로 변경
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
         } else {
-            // 이미지 없을 때 플레이스홀더
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(4.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "이미지 없음",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }

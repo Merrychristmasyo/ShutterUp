@@ -1,10 +1,12 @@
 package com.example.shutterup.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
@@ -198,6 +200,7 @@ private fun ProfileInfoSection(profile: com.example.shutterup.model.Profile, pho
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // 사용자 이름
         Text(
             text = profile.userId,
             style = MaterialTheme.typography.headlineSmall,
@@ -206,48 +209,57 @@ private fun ProfileInfoSection(profile: com.example.shutterup.model.Profile, pho
             textAlign = TextAlign.Center
         )
         
+        // 통계 정보
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Icon(
-                imageVector = Icons.Default.CameraAlt,
-                contentDescription = "Camera",
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = profile.camera,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Icon(
-                imageVector = Icons.Default.Photo,
-                contentDescription = "Photos",
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "${photoCount}장",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CameraAlt,
+                    contentDescription = "Camera",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = profile.camera,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+            
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Photo,
+                    contentDescription = "Photos",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${photoCount}장",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
         
+        // 소개글
         Text(
             text = profile.bio,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 8.dp)
         )
     }
 }
@@ -296,48 +308,46 @@ private fun PhotoGridSection(userPhotos: List<com.example.shutterup.model.PhotoM
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(2.dp),
+            contentPadding = PaddingValues(4.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             items(userPhotos) { photo ->
-                // 실제 사진 아이템 표시
-                Card(
-                    modifier = Modifier.aspectRatio(1f),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                Box(
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // 실제 사진 로딩 로직 (썸네일 우선)
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // 썸네일 우선, 없으면 원본 이미지 사용
-                        val thumbnailUri = fileManager.getThumbnailUri(photo.filename)
-                        val imageUri = thumbnailUri ?: fileManager.getImageUri(photo.filename)
-                        
-                        if (imageUri != null) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(imageUri)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = "사진",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop,
-                                onError = {
-                                    // 에러 발생 시 로그 출력
-                                    android.util.Log.e("ProfileDetailView", "Failed to load image: ${photo.filename}")
-                                }
-                            )
-                        } else {
-                            // 파일이 없는 경우 기본 아이콘 표시
+                    // 썸네일 우선, 없으면 원본 이미지 사용
+                    val thumbnailUri = fileManager.getThumbnailUri(photo.filename)
+                    val imageUri = thumbnailUri ?: fileManager.getImageUri(photo.filename)
+                    
+                    if (imageUri != null) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(imageUri)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "사진",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                            onError = {
+                                android.util.Log.e("ProfileDetailView", "Failed to load image: ${photo.filename}")
+                            }
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Photo,
                                 contentDescription = "사진 없음",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
