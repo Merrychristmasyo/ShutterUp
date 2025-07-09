@@ -53,6 +53,9 @@ import com.example.shutterup.model.PhotoMetadata
 import com.example.shutterup.viewmodel.PhotoSpotListViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.shutterup.utils.FileManager
+import com.example.shutterup.ui.components.LoadingComponent
+import com.example.shutterup.ui.components.ErrorComponent
+import com.example.shutterup.ui.components.EmptyStateComponent
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -638,62 +641,31 @@ fun PhotoSpotBottomSheetContent(
         // 콘텐츠
         when {
             isLoading -> {
-                Box(
+                LoadingComponent(
+                    message = "포토스팟을 불러오는 중...",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                        .height(200.dp)
+                )
             }
             errorMessage != null -> {
-                Box(
+                ErrorComponent(
+                    errorMessage = errorMessage,
+                    title = "포토스팟 로드 실패",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "오류: $errorMessage",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                        .height(200.dp)
+                )
             }
             photoSpots.isEmpty() -> {
-                Box(
+                EmptyStateComponent(
+                    title = if (searchQuery.isNotEmpty()) "검색 결과가 없습니다" else "포토스팟이 없습니다",
+                    message = if (searchQuery.isNotEmpty()) "다른 검색어로 시도해보세요" else "첫 번째 포토스팟을 등록해보세요",
+                    icon = if (searchQuery.isNotEmpty()) Icons.Default.Search else Icons.Default.LocationOn,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (searchQuery.isNotEmpty()) Icons.Default.Search else Icons.Default.LocationOn,
-                            contentDescription = "Empty",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Text(
-                            text = if (searchQuery.isNotEmpty()) "검색 결과가 없습니다." else "포토스팟이 없습니다.",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        if (searchQuery.isNotEmpty()) {
-                            Text(
-                                text = "다른 검색어로 시도해보세요.",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                    }
-                }
+                        .height(200.dp)
+                )
             }
             else -> {
                 LazyColumn(
@@ -754,30 +726,21 @@ fun PhotoSpotDetailBottomSheet(
         // 사진 갤러리
         when {
             isLoading -> {
-                Box(
+                LoadingComponent(
+                    message = "포토스팟 사진을 불러오는 중...",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                        .height(200.dp)
+                )
             }
             errorMessage != null -> {
-                Box(
+                ErrorComponent(
+                    errorMessage = errorMessage ?: "알 수 없는 오류",
+                    title = "사진 로드 실패",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "오류: $errorMessage",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                        .height(200.dp)
+                )
             }
             photoMetadataList.isNotEmpty() -> {
                 LazyVerticalGrid(

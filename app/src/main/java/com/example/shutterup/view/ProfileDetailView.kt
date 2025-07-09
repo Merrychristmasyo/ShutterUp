@@ -26,6 +26,9 @@ import coil.request.ImageRequest
 import com.example.shutterup.viewmodel.ProfileDetailViewModel
 import com.example.shutterup.utils.FileManager
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.shutterup.ui.components.LoadingComponent
+import com.example.shutterup.ui.components.ErrorComponent
+import com.example.shutterup.ui.components.EmptyStateComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,64 +108,30 @@ fun ProfileDetailScreenContent(
 
 @Composable
 private fun LoadingSection() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
+    LoadingComponent(
+        message = "프로필 정보를 불러오는 중...",
+        modifier = Modifier.fillMaxSize()
+    )
 }
 
 @Composable
 private fun ErrorSection(errorMessage: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "Error",
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.error
-            )
-            Text(
-                text = errorMessage,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp)
-            )
-        }
-    }
+    ErrorComponent(
+        errorMessage = errorMessage,
+        title = "프로필 로드 실패",
+        icon = Icons.Default.Person,
+        modifier = Modifier.fillMaxSize()
+    )
 }
 
 @Composable
 private fun EmptyProfileSection() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "No profile",
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "프로필을 찾을 수 없습니다",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
+    EmptyStateComponent(
+        title = "프로필을 찾을 수 없습니다",
+        message = "해당 사용자의 프로필이 존재하지 않습니다",
+        icon = Icons.Default.Person,
+        modifier = Modifier.fillMaxSize()
+    )
 }
 
 @Composable

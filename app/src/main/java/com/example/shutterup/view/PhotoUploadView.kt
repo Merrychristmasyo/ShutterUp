@@ -49,6 +49,9 @@ import com.example.shutterup.model.PhotoUploadData
 import com.example.shutterup.viewmodel.PhotoUploadViewModel
 import com.example.shutterup.viewmodel.PhotoSpotListViewModel
 import com.example.shutterup.utils.FileManager
+import com.example.shutterup.ui.components.LoadingComponent
+import com.example.shutterup.ui.components.ErrorComponent
+import com.example.shutterup.ui.components.UploadProgressComponent
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -59,6 +62,8 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
 import com.mapbox.maps.plugin.gestures.gestures
+import android.content.Context
+import android.content.ContentUris
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,21 +140,24 @@ fun PhotoUploadView(
         }
     }
     
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-    ) { 
-        // 진행 바
-        ProgressIndicator(currentStep = currentStep)
-        
-        // 각 단계별 컨텐츠
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-        ) {
-            when (currentStep) {
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) { 
+            // 진행 바
+            ProgressIndicator(currentStep = currentStep)
+            
+            // 각 단계별 컨텐츠
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            ) {
+                when (currentStep) {
                 1 -> PhotoSelectionStep(
                     selectedImageUri = selectedImageUri,
                     onImageSelected = { selectedImageUri = it },
@@ -231,6 +239,29 @@ fun PhotoUploadView(
                         }
                     },
                     onBack = { currentStep = 3 }
+                )
+                }
+            }
+        }
+        
+        // 업로드 중일 때 전체 화면 오버레이
+        if (isUploading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
+            ) {
+                UploadProgressComponent(
+                    progress = when(currentStep) {
+                        1 -> 0.25f
+                        2 -> 0.5f
+                        3 -> 0.75f
+                        4 -> 1.0f
+                        else -> 0.0f
+                    },
+                    currentStep = "사진을 업로드하고 있습니다...",
+                    totalSteps = 4,
+                    currentStepIndex = currentStep
                 )
             }
         }
@@ -499,19 +530,17 @@ fun GalleryImageItem(
     }
 }
 
-// 갤러리 이미지 로드 함수
-suspend fun loadGalleryImages(context: android.content.Context): List<Uri> {
-    return try {
-        android.util.Log.d("PhotoUpload", "Starting to load gallery images...")
-        val images = mutableListOf<Uri>()
+// 갤러리 이미지 로드 확장 함수
+fun loadGalleryImages(context: Context): List<Uri> {
+    val images = mutableListOf<Uri>()
+    
+    try {
         val projection = arrayOf(
             MediaStore.Images.Media._ID,
-            MediaStore.Images.Media.DATE_ADDED,
-            MediaStore.Images.Media.DISPLAY_NAME,
-            MediaStore.Images.Media.DATA
+            MediaStore.Images.Media.DATA,
+            MediaStore.Images.Media.DATE_ADDED
         )
         
-        android.util.Log.d("PhotoUpload", "Querying MediaStore...")
         val cursor: Cursor? = context.contentResolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             projection,
@@ -520,32 +549,22 @@ suspend fun loadGalleryImages(context: android.content.Context): List<Uri> {
             "${MediaStore.Images.Media.DATE_ADDED} DESC"
         )
         
-        android.util.Log.d("PhotoUpload", "Cursor result: ${cursor?.count ?: 0} items")
-        
-        cursor?.use {
-            val idColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-            val nameColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
-            val dataColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        cursor?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
             
-            while (it.moveToNext()) {
-                val id = it.getLong(idColumn)
-                val name = it.getString(nameColumn)
-                val path = it.getString(dataColumn)
-                val contentUri = Uri.withAppendedPath(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    id.toString()
+            while (cursor.moveToNext() && images.size < 50) { // 최대 50개만 로드
+                val id = cursor.getLong(idColumn)
+                val contentUri = ContentUris.withAppendedId(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id
                 )
                 images.add(contentUri)
-                android.util.Log.d("PhotoUpload", "Found image: $name at $path")
             }
         }
-        
-        android.util.Log.d("PhotoUpload", "Total images loaded: ${images.size}")
-        images
     } catch (e: Exception) {
-        android.util.Log.e("PhotoUpload", "Error loading gallery images: ${e.message}", e)
-        emptyList()
+        android.util.Log.e("PhotoUpload", "Error loading gallery images: ${e.message}")
     }
+    
+    return images
 }
 
 @Composable

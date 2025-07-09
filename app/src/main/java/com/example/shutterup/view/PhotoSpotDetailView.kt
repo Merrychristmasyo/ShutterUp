@@ -34,6 +34,9 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shutterup.viewmodel.PhotoSpotDetailViewModel
 import com.example.shutterup.utils.FileManager
+import com.example.shutterup.ui.components.LoadingComponent
+import com.example.shutterup.ui.components.ErrorComponent
+import com.example.shutterup.ui.components.EmptyStateComponent
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -85,26 +88,17 @@ fun PhotoSpotDetailView(
 
         when {
             isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+                LoadingComponent(
+                    message = "포토스팟 정보를 불러오는 중...",
+                    modifier = Modifier.fillMaxSize()
+                )
             }
             errorMessage != null -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "오류 발생: $errorMessage",
-                        color = Color.Red,
-                        fontSize = 18.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+                ErrorComponent(
+                    errorMessage = errorMessage ?: "알 수 없는 오류",
+                    title = "포토스팟 로드 실패",
+                    modifier = Modifier.fillMaxSize()
+                )
             }
             photoSpot != null -> {
                 PhotoSpotDetailContent(
@@ -115,12 +109,11 @@ fun PhotoSpotDetailView(
                 )
             }
             else -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("포토스팟을 찾을 수 없습니다.", fontSize = 18.sp)
-                }
+                EmptyStateComponent(
+                    title = "포토스팟을 찾을 수 없습니다",
+                    message = "요청한 포토스팟이 존재하지 않습니다",
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }

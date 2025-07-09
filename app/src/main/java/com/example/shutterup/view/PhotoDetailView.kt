@@ -37,6 +37,8 @@ import com.example.shutterup.model.PhotoReview
 import com.example.shutterup.model.PhotoSpot
 import com.example.shutterup.viewmodel.PhotoDetailViewModel
 import com.example.shutterup.utils.FileManager
+import com.example.shutterup.ui.components.LoadingComponent
+import com.example.shutterup.ui.components.ErrorComponent
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -120,19 +122,17 @@ fun PhotoDetailScreenContent(
     ) {
         when {
             isLoading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+                LoadingComponent(
+                    message = "사진 세부정보를 불러오는 중...",
+                    modifier = Modifier.fillMaxSize()
+                )
             }
             errorMessage != null -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "오류 발생: $errorMessage",
-                        color = MaterialTheme.colorScheme.error,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+                ErrorComponent(
+                    errorMessage = errorMessage,
+                    title = "사진 정보 로드 실패",
+                    modifier = Modifier.fillMaxSize()
+                )
             }
             else -> {
                 LazyColumn(
