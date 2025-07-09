@@ -76,9 +76,11 @@ import com.mapbox.maps.plugin.gestures.OnMapClickListener
 import com.mapbox.maps.plugin.gestures.gestures
 import android.content.Context
 import android.content.ContentUris
+import android.view.MotionEvent
 
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.example.shutterup.utils.keyboardPadding
+
 //import androidx.compose.ui.platform.SoftwareKeyboardController
 //import androidx.compose.ui.text.input.ImeAction
 
@@ -787,6 +789,9 @@ fun LocationSelectionStep(
                                 onLocationSelected = { lat, lng ->
                                     customLatitude = lat.toString()
                                     customLongitude = lng.toString()
+                                },
+                                onMapInteraction = { interacting ->
+                                    // 지도 상호작용 시 스크롤 제어 (향후 구현 예정)
                                 }
                             )
                         }
@@ -1290,7 +1295,8 @@ fun LocationPickerMapView(
     modifier: Modifier = Modifier,
     existingPhotoSpots: List<PhotoSpot>,
     selectedLocationName: String,
-    onLocationSelected: (Double, Double) -> Unit
+    onLocationSelected: (Double, Double) -> Unit,
+    onMapInteraction: (Boolean) -> Unit = {}
 ) {
     val context = LocalContext.current
     var selectedLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
@@ -1299,6 +1305,23 @@ fun LocationPickerMapView(
     AndroidView(
         factory = { context ->
             MapView(context).apply {
+                // 터치 이벤트 처리 - 지도 터치 시 부모 스크롤 비활성화
+                setOnTouchListener { view, event ->
+                    when (event.action) {
+                        MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+                            // 지도 터치 시 부모 스크롤 비활성화
+                            view.parent?.requestDisallowInterceptTouchEvent(true)
+                            onMapInteraction(true)
+                        }
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            // 터치 종료 시 부모 스크롤 재활성화
+                            view.parent?.requestDisallowInterceptTouchEvent(false)
+                            onMapInteraction(false)
+                        }
+                    }
+                    false // 지도 자체 터치 이벤트는 계속 처리
+                }
+                
                 // 지도 초기 설정
                 mapboxMap.loadStyle(MapboxStyle.MAPBOX_STREETS) { style ->
                     // 초기 카메라 위치 설정 (포토스팟이 있으면 첫 번째 위치, 없으면 기본값)
@@ -1313,6 +1336,16 @@ fun LocationPickerMapView(
                         .build()
                     
                     mapboxMap.setCamera(cameraOptions)
+                    
+                    // 지도 상호작용 설정 - 모든 제스처 활성화
+                    gestures.scrollEnabled = true
+                    gestures.pinchToZoomEnabled = true
+                    gestures.rotateEnabled = true
+                    gestures.pitchEnabled = true
+                    gestures.doubleTapToZoomInEnabled = true
+                    gestures.doubleTouchToZoomOutEnabled = true
+                    gestures.quickZoomEnabled = true
+                    gestures.scrollDecelerationEnabled = true
                     
                     // 기존 포토 스팟들을 지도에 표시
                     val annotationApi = annotations
