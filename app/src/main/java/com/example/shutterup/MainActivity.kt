@@ -28,7 +28,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -39,8 +43,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.shutterup.navigation.Screen
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -49,12 +56,23 @@ class MainActivity : ComponentActivity() {
     lateinit var fileManager: FileManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        //splash야 나타나라. 1)초기화
+        val splashScreen = installSplashScreen()
+        // ② 플래그 변수는 onCreate 스코프에서 정의
+        var keepSplashOnScreen = true
+        // ③ 이 람다를 설치된 즉시 전달해야 스플래시가 대기합니다
+        splashScreen.setKeepOnScreenCondition { keepSplashOnScreen }
 
+        super.onCreate(savedInstanceState)
         setContent {
             ShutterUpTheme {
-                val navController = rememberNavController()
+                // ④ Compose 내부에서 지연 후 플래그 수정
+                LaunchedEffect(Unit) {
+                    delay(1500)
+                    keepSplashOnScreen = false
+                }
 
+                val navController = rememberNavController()
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.implementation
 import java.util.Properties
 
 plugins {
@@ -86,6 +87,14 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended") //이거 navigation bar의 icon때문에 넣었음
     implementation("androidx.compose.material3:material3:1.2.1") // 버전은 최신으로
 
+    //Splash screen
+    implementation("androidx.core:core-splashscreen:1.0.0")
+
+    //Material 3 dependency
+    // Material Components (M3) 테마
+    implementation ("com.google.android.material:material:1.8.0")
+    // SplashScreen 코어 라이브러리
+    implementation ("androidx.core:core-splashscreen:1.0.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
