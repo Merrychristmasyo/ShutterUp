@@ -1,5 +1,15 @@
 package com.example.shutterup.view
 
+// 키보드 컨트롤러
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
+// IME 액션
+import androidx.compose.ui.text.input.ImeAction
+// 키보드 옵션·액션 (Compose Foundation 쪽)
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+
+
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -42,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import android.widget.Toast
+
+import androidx.compose.ui.semantics.SemanticsProperties.ImeAction
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shutterup.model.PhotoSpot
@@ -60,9 +72,15 @@ import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
 import com.mapbox.maps.plugin.gestures.gestures
 
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+//import androidx.compose.ui.platform.SoftwareKeyboardController
+//import androidx.compose.ui.text.input.ImeAction
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PhotoUploadView(
+    keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
     viewModel: PhotoUploadViewModel = hiltViewModel(),
     spotListViewModel: PhotoSpotListViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
@@ -550,6 +568,7 @@ suspend fun loadGalleryImages(context: android.content.Context): List<Uri> {
 
 @Composable
 fun LocationSelectionStep(
+    keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
     spotListViewModel: PhotoSpotListViewModel,
     selectedPhotoSpot: PhotoSpot?,
     customLocation: Pair<Double, Double>?,
@@ -729,7 +748,12 @@ fun LocationSelectionStep(
                     onValueChange = { customSpotName = it },
                     label = { Text("위치 이름") },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("포토 스팟의 이름을 입력하세요") }
+                    placeholder = { Text("포토 스팟의 이름을 입력하세요") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                    )
                 )
                 
                 // 선택된 위치 정보 표시
@@ -851,6 +875,7 @@ fun LocationSelectionStep(
 
 @Composable
 fun MetadataInputStep(
+    keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
     description: String,
     tags: String,
     fNumber: String,
@@ -915,7 +940,12 @@ fun MetadataInputStep(
                 label = { Text("설명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
-                placeholder = { Text("사진에 대한 설명을 자유롭게 작성하세요") }
+                placeholder = { Text("사진에 대한 설명을 자유롭게 작성하세요") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                )
             )
         }
         
@@ -926,6 +956,11 @@ fun MetadataInputStep(
                 label = { Text("태그 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("예: 일몰, 한강, 자연") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                ),
                 supportingText = {
                     Text(
                         text = "쉼표로 구분해서 입력하세요",
@@ -953,7 +988,12 @@ fun MetadataInputStep(
                     onValueChange = onFNumberChange,
                     label = { Text("F값 (선택)") },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("f/2.8") }
+                    placeholder = { Text("f/2.8") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                    )
                 )
                 
                 OutlinedTextField(
@@ -961,7 +1001,12 @@ fun MetadataInputStep(
                     onValueChange = onFocalLengthChange,
                     label = { Text("초점거리 (선택)") },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("50mm") }
+                    placeholder = { Text("50mm") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                    )
                 )
             }
         }
@@ -975,7 +1020,12 @@ fun MetadataInputStep(
                     onValueChange = onIsoChange,
                     label = { Text("ISO (선택)") },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("200") }
+                    placeholder = { Text("200") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                    )
                 )
                 
                 OutlinedTextField(
@@ -983,7 +1033,12 @@ fun MetadataInputStep(
                     onValueChange = onShutterSpeedChange,
                     label = { Text("셔터속도 (선택)") },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("1/250s") }
+                    placeholder = { Text("1/250s") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                    )
                 )
             }
         }
@@ -994,7 +1049,12 @@ fun MetadataInputStep(
                 onValueChange = onLensNameChange,
                 label = { Text("렌즈명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Canon EF 50mm f/1.8") }
+                placeholder = { Text("Canon EF 50mm f/1.8") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                )
             )
         }
         
@@ -1004,7 +1064,12 @@ fun MetadataInputStep(
                 onValueChange = onCameraNameChange,
                 label = { Text("카메라명 (선택)") },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Canon EOS R5") }
+                placeholder = { Text("Canon EOS R5") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+                )
             )
         }
         
@@ -1038,6 +1103,7 @@ fun MetadataInputStep(
 
 @Composable
 fun DetailInputStep(
+    keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
     shootingMethod: String,
     onShootingMethodChange: (String) -> Unit,
     isUploading: Boolean,
@@ -1063,6 +1129,11 @@ fun DetailInputStep(
             label = { Text("촬영 방법 (선택)") },
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("예: 수동, 자동, 야간모드\n삼각대 사용, 플래시 사용 등") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }
+            ),
             minLines = 3,
             maxLines = 5
         )
