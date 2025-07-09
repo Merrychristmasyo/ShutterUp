@@ -18,7 +18,8 @@
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.ShutterUp.Splash">  <!-- 혹은 전용 스플래시 테마 -->
+            android:label=""
+            android:theme="@style/Theme.ShutterUp.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

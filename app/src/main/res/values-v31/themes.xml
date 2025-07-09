@@ -3,21 +3,17 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Android 12+ 스플래시 테마 -->
+    <!-- Android 12+ 시스템 스플래시 비활성화 -->
     <style name="Theme.ShutterUp.Splash" parent="Theme.SplashScreen">
-        <!-- 배경색 -->
-        <item name="android:windowSplashScreenBackground"
-            tools:targetApi="s">@color/white</item>
-
-        <!-- 여기에 Vector Drawable 로고를 지정 -->
-        <item name="android:windowSplashScreenAnimatedIcon"
-            tools:targetApi="s">@drawable/ic_splash_logo</item>
-
-        <!-- 애니메이션 지속시간 -->
-        <item name="android:windowSplashScreenAnimationDuration">1000</item>
-
-        <!-- 스플래시 종료 후 돌아갈 기본 테마 -->
+        <!-- 시스템 스플래시 완전 비활성화 -->
+        <item name="android:windowSplashScreenBackground">@android:color/transparent</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
         <item name="postSplashScreenTheme">@style/Theme.ShutterUp</item>
+        
+        <!-- 추가 설정으로 시스템 스플래시 즉시 종료 -->
+        <item name="android:windowSplashScreenBrandingImage" tools:targetApi="s">@null</item>
+        <item name="android:windowSplashScreenIconBackgroundColor" tools:targetApi="s">@android:color/transparent</item>
     </style>
 
 </resources>
