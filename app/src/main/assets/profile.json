@@ -3,5 +3,50 @@
     "userId": "user_001",
     "camera": "Canon EOS R10",
     "bio": "I'm a photographer who loves to capture the beauty of the world."
+  },
+  {
+    "userId": "user_002",
+    "camera": "Sony A7 IV",
+    "bio": "Street photography enthusiast capturing urban life and candid moments."
+  },
+  {
+    "userId": "user_003",
+    "camera": "Nikon Z6 II",
+    "bio": "Landscape photographer exploring nature's most breathtaking vistas."
+  },
+  {
+    "userId": "user_004",
+    "camera": "Fujifilm X-T5",
+    "bio": "Portrait specialist focusing on human emotions and expressions."
+  },
+  {
+    "userId": "user_005",
+    "camera": "Canon EOS R5",
+    "bio": "Wildlife photographer documenting animals in their natural habitat."
+  },
+  {
+    "userId": "user_006",
+    "camera": "Sony A7R V",
+    "bio": "Architecture photographer with an eye for geometric patterns and urban design."
+  },
+  {
+    "userId": "user_007",
+    "camera": "Leica M11",
+    "bio": "Documentary photographer telling stories through powerful imagery."
+  },
+  {
+    "userId": "user_008",
+    "camera": "Nikon Z9",
+    "bio": "Sports photographer capturing action and athletic moments."
+  },
+  {
+    "userId": "user_009",
+    "camera": "Fujifilm GFX 100S",
+    "bio": "Fine art photographer creating conceptual and artistic compositions."
+  },
+  {
+    "userId": "user_010",
+    "camera": "Canon EOS R6 Mark II",
+    "bio": "Travel photographer exploring cultures and landscapes around the world."
   }
 ]

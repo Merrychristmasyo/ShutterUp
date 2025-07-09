@@ -491,6 +491,7 @@ fun PhotoSpotMapView(
                         .withPoint(Point.fromLngLat(location.second, location.first))
                         .withIconImage("user-location")
                         .withIconSize(0.8)
+                        .withData(com.google.gson.JsonPrimitive("user-location"))
                     
                     pointAnnotationManager.create(userLocationAnnotation)
                 }
@@ -511,8 +512,24 @@ fun PhotoSpotMapView(
                 
                 // 마커 클릭 리스너
                 pointAnnotationManager.addClickListener { annotation ->
-                    val photoSpotId = annotation.getData()?.asString
-                    val photoSpot = photoSpots.find { it.id == photoSpotId }
+                    val markerData = annotation.getData()?.asString
+                    
+                    // 현재 위치 핀을 클릭한 경우
+                    if (markerData == "user-location") {
+                        // 현재 위치로 카메라 이동
+                        userLocation?.let { location ->
+                            val cameraOptions = CameraOptions.Builder()
+                                .center(Point.fromLngLat(location.second, location.first))
+                                .zoom(15.0) // 더 가까이 줌인
+                                .build()
+                            
+                            mapView.mapboxMap.setCamera(cameraOptions)
+                        }
+                        return@addClickListener true
+                    }
+                    
+                    // 포토스팟 마커를 클릭한 경우
+                    val photoSpot = photoSpots.find { it.id == markerData }
                     if (photoSpot != null) {
                         onMarkerClick(photoSpot)
                     }

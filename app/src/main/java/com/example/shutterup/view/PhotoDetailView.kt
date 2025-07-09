@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -167,41 +168,66 @@ fun PhotoDetailScreenContent(
 @Composable
 fun PhotoDetailImageSection(photoMetadata: PhotoMetadata?, fileManager: FileManager) {
     val context = LocalContext.current
+    var isFullScreen by remember { mutableStateOf(false) }
+    
     val imageUri = remember(photoMetadata?.filename) {
         photoMetadata?.filename?.let { filename ->
             fileManager.getImageUri(filename)
         }
     }
 
-    if (imageUri != null) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(imageUri)
-                .crossfade(true)
-                .build(),
-            contentDescription = photoMetadata?.filename ?: "Photo",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-        )
-    } else {
-        // 이미지가 없을 때 플레이스홀더
+    if (isFullScreen && imageUri != null) {
+        // 전체 화면 모드
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .fillMaxSize()
+                .background(Color.Black)
+                .clickable { isFullScreen = false }, // 터치하면 전체 화면 종료
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "이미지를 불러올 수 없습니다",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageUri)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = photoMetadata?.filename ?: "Photo",
+                contentScale = ContentScale.Fit, // 전체 화면에서는 Fit 사용
+                modifier = Modifier.fillMaxSize()
             )
+        }
+    } else {
+        // 일반 모드
+        if (imageUri != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageUri)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = photoMetadata?.filename ?: "Photo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(0.dp))
+                    .border(1.dp, Color.Gray, RoundedCornerShape(0.dp))
+                    .clickable { isFullScreen = true } // 클릭하면 전체 화면 모드
+            )
+        } else {
+            // 이미지가 없을 때 플레이스홀더
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(0.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "이미지를 불러올 수 없습니다",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

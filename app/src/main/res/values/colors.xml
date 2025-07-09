@@ -31,4 +31,10 @@
     <color name="success">#FF4CAF50</color>
     <color name="warning">#FFFFA726</color>
     <color name="info">#FF2196F3</color>
+    
+    <!-- 스플래시 관련 색상 -->
+    <color name="splash_background">#0095F6</color>
+    <color name="splash_status_bar">#0095F6</color>
+    <color name="splash_background_dark">#000000</color>
+    <color name="splash_status_bar_dark">#000000</color>
 </resources>

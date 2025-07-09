@@ -37,14 +37,47 @@ class PhotoDetailRepository @Inject constructor(
     private suspend fun loadPhotoDetailsFromFile(): List<PhotoDetail> {
         return withContext(Dispatchers.IO) {
             try {
-                val jsonString = fileManager.loadJsonData(jsonFileName)
-                if (jsonString != null) {
-                    json.decodeFromString<List<PhotoDetail>>(jsonString)
+                // 1. 먼저 internal storage에서 실제 업로드된 데이터 로드
+                val internalJsonString = fileManager.loadJsonData(jsonFileName)
+                val internalData = if (internalJsonString != null) {
+                    try {
+                        json.decodeFromString<List<PhotoDetail>>(internalJsonString)
+                    } catch (e: Exception) {
+                        android.util.Log.w("PhotoDetailRepository", "Error parsing internal data: ${e.message}")
+                        emptyList()
+                    }
                 } else {
                     emptyList()
                 }
+
+                // 2. Assets에서 초기 더미 데이터 로드
+                val assetsData = try {
+                    val assetsJsonString = context.assets.open(jsonFileName).bufferedReader().use { it.readText() }
+                    json.decodeFromString<List<PhotoDetail>>(assetsJsonString)
+                } catch (e: Exception) {
+                    android.util.Log.w("PhotoDetailRepository", "Error loading assets data: ${e.message}")
+                    emptyList()
+                }
+
+                // 3. 두 데이터를 합치되, 중복 ID는 internal 데이터를 우선으로 함
+                val combinedData = mutableMapOf<String, PhotoDetail>()
+                
+                // 먼저 assets 데이터를 추가
+                assetsData.forEach { detail ->
+                    combinedData[detail.id] = detail
+                }
+                
+                // 그 다음 internal 데이터를 추가 (중복 ID가 있으면 덮어씀)
+                internalData.forEach { detail ->
+                    combinedData[detail.id] = detail
+                }
+
+                val finalData = combinedData.values.toList()
+                android.util.Log.d("PhotoDetailRepository", "Loaded ${finalData.size} photo details (assets: ${assetsData.size}, internal: ${internalData.size})")
+                
+                finalData
             } catch (e: Exception) {
-                android.util.Log.e("PhotoDetailRepository", "Error parsing $jsonFileName: ${e.message}", e)
+                android.util.Log.e("PhotoDetailRepository", "Error loading photo details: ${e.message}", e)
                 emptyList()
             }
         }
