@@ -53,7 +53,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
-import com.mapbox.maps.Style
+import com.mapbox.maps.Style as MapboxStyle
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
@@ -1155,7 +1155,7 @@ fun LocationPickerMapView(
         factory = { context ->
             MapView(context).apply {
                 // 지도 초기 설정
-                mapboxMap.loadStyle(Style.MAPBOX_STREETS) { style ->
+                mapboxMap.loadStyle(MapboxStyle.MAPBOX_STREETS) { style ->
                     // 초기 카메라 위치 설정 (포토스팟이 있으면 첫 번째 위치, 없으면 기본값)
                     val initialLocation = if (existingPhotoSpots.isNotEmpty()) {
                         Point.fromLngLat(existingPhotoSpots.first().longitude, existingPhotoSpots.first().latitude)
@@ -1173,17 +1173,65 @@ fun LocationPickerMapView(
                     val annotationApi = annotations
                     val existingSpotAnnotationManager = annotationApi.createPointAnnotationManager()
                     
+                    // 기존 포토스팟용 파란색 원형 아이콘 생성
+                    val existingSpotBitmap = android.graphics.Bitmap.createBitmap(60, 60, android.graphics.Bitmap.Config.ARGB_8888)
+                    val existingSpotCanvas = android.graphics.Canvas(existingSpotBitmap)
+                    
+                    // 파란색 원 그리기
+                    val existingSpotPaint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.BLUE
+                        isAntiAlias = true
+                    }
+                    // 원형 몸체
+                    existingSpotCanvas.drawCircle(30f, 30f, 25f, existingSpotPaint)
+                    
+                    // 흰색 테두리
+                    val existingSpotBorderPaint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.WHITE
+                        this.style = android.graphics.Paint.Style.STROKE
+                        strokeWidth = 4f
+                        isAntiAlias = true
+                    }
+                    existingSpotCanvas.drawCircle(30f, 30f, 25f, existingSpotBorderPaint)
+                    
+                    // 새로운 위치용 빨간색 원형 아이콘 생성
+                    val newLocationBitmap = android.graphics.Bitmap.createBitmap(60, 60, android.graphics.Bitmap.Config.ARGB_8888)
+                    val newLocationCanvas = android.graphics.Canvas(newLocationBitmap)
+                    
+                    // 빨간색 원 그리기
+                    val newLocationPaint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.RED
+                        isAntiAlias = true
+                    }
+                    // 원형 몸체
+                    newLocationCanvas.drawCircle(30f, 30f, 25f, newLocationPaint)
+                    
+                    // 흰색 테두리
+                    val newLocationBorderPaint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.WHITE
+                        this.style = android.graphics.Paint.Style.STROKE
+                        strokeWidth = 4f
+                        isAntiAlias = true
+                    }
+                    newLocationCanvas.drawCircle(30f, 30f, 25f, newLocationBorderPaint)
+                    
+                    // 스타일에 이미지 추가
+                    style.addImage("existing-spot-pin", existingSpotBitmap)
+                    style.addImage("new-location-pin", newLocationBitmap)
+                    
                     existingPhotoSpots.forEach { photoSpot ->
                         try {
                             val point = Point.fromLngLat(photoSpot.longitude, photoSpot.latitude)
                             val pointAnnotationOptions = PointAnnotationOptions()
                                 .withPoint(point)
+                                .withIconImage("existing-spot-pin")
+                                .withIconSize(0.8)
                                 .withTextField(photoSpot.name)
-                                .withTextSize(12.0)
+                                .withTextSize(10.0)
                                 .withTextColor(android.graphics.Color.BLUE)
                                 .withTextHaloColor(android.graphics.Color.WHITE)
                                 .withTextHaloWidth(2.0)
-                                .withTextOffset(listOf(0.0, -2.0)) // 텍스트를 핀 위쪽에 위치
+                                .withTextOffset(listOf(0.0, -3.0)) // 텍스트를 핀 위쪽에 위치
                             
                             existingSpotAnnotationManager.create(pointAnnotationOptions)
                             android.util.Log.d("LocationPicker", "Added existing spot: ${photoSpot.name} at ${photoSpot.latitude}, ${photoSpot.longitude}")
@@ -1204,15 +1252,11 @@ fun LocationPickerMapView(
                             // 기존 사용자 선택 마커 제거
                             userSelectedAnnotationManager?.deleteAll()
                             
-                            // 새 사용자 선택 마커 추가 (기본 마커 사용)
+                            // 새 사용자 선택 마커 추가 (핀 아이콘만 사용)
                             val pointAnnotationOptions = PointAnnotationOptions()
                                 .withPoint(point)
-                                .withTextField("새 위치")
-                                .withTextSize(12.0)
-                                .withTextColor(android.graphics.Color.RED)
-                                .withTextHaloColor(android.graphics.Color.WHITE)
-                                .withTextHaloWidth(2.0)
-                                .withTextOffset(listOf(0.0, -2.0))
+                                .withIconImage("new-location-pin") // 핀 아이콘 사용
+                                .withIconSize(0.8)
                             
                             userSelectedAnnotationManager?.create(pointAnnotationOptions)
                             
@@ -1243,12 +1287,8 @@ fun LocationPickerMapView(
                     val displayName = if (selectedLocationName.isNotBlank()) selectedLocationName else "새 위치"
                     val pointAnnotationOptions = PointAnnotationOptions()
                         .withPoint(point)
-                        .withTextField(displayName)
-                        .withTextSize(12.0)
-                        .withTextColor(android.graphics.Color.RED)
-                        .withTextHaloColor(android.graphics.Color.WHITE)
-                        .withTextHaloWidth(2.0)
-                        .withTextOffset(listOf(0.0, -2.0))
+                        .withIconImage("new-location-pin") // 핀 아이콘 사용
+                        .withIconSize(0.8)
                     
                     userSelectedAnnotationManager?.create(pointAnnotationOptions)
                 }
